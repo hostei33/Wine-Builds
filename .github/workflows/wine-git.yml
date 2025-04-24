@@ -25,6 +25,7 @@ jobs:
           sudo tar -C /opt -xpf /opt/Bootstraps/bootstraps.tar.xz
           chmod +x build_wine.sh
           export WINE_VERSION="git"
+          export EXPERIMENTAL_WOW64="true"
           WINE_BRANCH=vanilla ./build_wine.sh
           WINE_BRANCH=staging ./build_wine.sh
           sha256sum *.tar.xz
