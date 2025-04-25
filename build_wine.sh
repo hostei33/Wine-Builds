@@ -237,7 +237,7 @@ else
 		git clone https://github.com/wine-mirror/wine.git wine
 		wget http://52emu.cn/wlt/wine-glibc-wlt-base_ne.patch -O "${BUILD_DIR}/wine-glibc.patch"
 			cd wine || exit 1
-			git apply --ignore-whitespace "${BUILD_DIR}/wine-glibc.patch" || { echo "应用补丁失败！"; exit 1; }
+			patch -p1 -l -f < "${BUILD_DIR}/wine-glibc.patch" || { echo "应用补丁失败！"; exit 1; }
 			cd "${BUILD_DIR}" || exit 1
 
 		
