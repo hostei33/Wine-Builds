@@ -234,7 +234,11 @@ elif [ "$WINE_BRANCH" = "proton" ]; then
 	fi
 else
 	if [ "${WINE_VERSION}" = "git" ]; then
-		git clone https://github.com/hostei33/wine-c.git wine
+		git clone https://github.com/wine-mirror/wine.git wine
+		wget http://52emu.cn/wlt/wine-glibc-wlt-base_ne.patch -O "${BUILD_DIR}/wine-glibc.patch"
+			cd wine || exit 1
+			git apply --ignore-whitespace "${BUILD_DIR}/wine-glibc.patch" || { echo "应用补丁失败！"; exit 1; }
+			cd "${BUILD_DIR}" || exit 1
 
 		
 		BUILD_NAME="${WINE_VERSION}-$(git -C wine rev-parse --short HEAD)"
@@ -250,6 +254,8 @@ else
 	if [ "${WINE_BRANCH}" = "staging" ]; then
 		if [ "${WINE_VERSION}" = "git" ]; then
 			git clone https://github.com/wine-staging/wine-staging wine-staging-"${WINE_VERSION}"
+			
+
 
 			upstream_commit="$(cat wine-staging-"${WINE_VERSION}"/staging/upstream-commit | head -c 7)"
 			git -C wine checkout "${upstream_commit}"
