@@ -169,7 +169,7 @@ fi
 
 # Replace the "latest" parameter with the actual latest Wine version
 if [ "${WINE_VERSION}" = "latest" ] || [ -z "${WINE_VERSION}" ]; then
-	WINE_VERSION="10.4"
+	WINE_VERSION="$(wget -q -O - "https://raw.githubusercontent.com/wine-mirror/wine/master/VERSION" | tail -c +14)"
 fi
 
 # Stable and Development versions have a different source code location
@@ -208,12 +208,12 @@ if [ -n "${CUSTOM_SRC_PATH}" ]; then
 	BUILD_NAME="${WINE_VERSION}"-custom
 elif [ "$WINE_BRANCH" = "staging-tkg" ] || [ "$WINE_BRANCH" = "staging-tkg-ntsync" ]; then
 	if [ "$WINE_BRANCH" = "staging-tkg" ] && [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
-		git clone https://github.com/hostei33/wine-tkg.git wine
+		git clone https://github.com/Kron4ek/wine-tkg wine -b wow64
 	else
 		if [ "$WINE_BRANCH" = "staging-tkg" ]; then
-			git clone https://github.com/hostei33/wine-tkg wine -b wow64-10.4
+			git clone https://github.com/Kron4ek/wine-tkg wine
 		else
-			git clone https://github.com/hostei33/wine-tkg wine -b wow64-10.4
+			git clone https://github.com/Kron4ek/wine-tkg wine -b ntsync
 		fi
 	fi
 
@@ -235,6 +235,12 @@ elif [ "$WINE_BRANCH" = "proton" ]; then
 else
 	if [ "${WINE_VERSION}" = "git" ]; then
 		git clone https://gitlab.winehq.org/wine/wine.git wine
+		wget http://52emu.cn/wlt/wine-glibc-wlt-base_ne.patch -O "${BUILD_DIR}/wine-glibc.patch"
+		cd wine || exit 1
+		git apply "${BUILD_DIR}/wine-glibc.patch" || { echo "应用补丁失败！"; exit 1; }
+ 		cd "${BUILD_DIR}" || exit 1
+
+		
 		BUILD_NAME="${WINE_VERSION}-$(git -C wine rev-parse --short HEAD)"
 	else
 		BUILD_NAME="${WINE_VERSION}"
