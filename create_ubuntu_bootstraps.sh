@@ -21,14 +21,15 @@ fi
 # Keep in mind that although you can choose any version of Ubuntu/Debian
 # here, but this script has only been tested with Ubuntu 18.04 Bionic
 export CHROOT_DISTRO="bionic"
+
 export CHROOT_MIRROR="https://ftp.uni-stuttgart.de/ubuntu/"
 
 # Set your preferred path for storing chroots
 # Also don't forget to change the path to the chroots in the build_wine.sh
 # script, if you are going to use it
-export MAINDIR=/opt/chroots
-export CHROOT_X64="${MAINDIR}"/${CHROOT_DISTRO}64_chroot
+export MAINDIR=/opt/chroot/
 export CHROOT_X32="${MAINDIR}"/${CHROOT_DISTRO}32_chroot
+export CHROOT_X64="${MAINDIR}"/${CHROOT_DISTRO}64_chroot
 
 prepare_chroot () {
 	if [ "$1" = "32" ]; then
@@ -68,16 +69,11 @@ prepare_chroot () {
 create_build_scripts () {
 	sdl2_version="2.26.4"
 	faudio_version="23.03"
-	vulkan_headers_version="1.4.304"
-	vulkan_loader_version="1.4.304"
+	vulkan_headers_version="1.3.239"
+	vulkan_loader_version="1.3.239"
 	spirv_headers_version="sdk-1.3.239.0"
  	libpcap_version="1.10.4"
   	libxkbcommon_version="1.6.0"
-   	python3_version="3.12.4"
-    	meson_version="1.3.2"
-     	cmake_version="3.30.3"
-      	ccache_version="4.10.2"
-        libglvnd_version="1.7.0"
 
 	cat <<EOF > "${MAINDIR}"/prepare_chroot.sh
 #!/bin/bash
@@ -101,17 +97,18 @@ apt-get -y install software-properties-common
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
 add-apt-repository -y ppa:cybermax-dexter/mingw-w64-backport
 apt-get update
-apt-get -y build-dep wine-development libsdl2 libvulkan1 python3
-apt-get -y install ccache gcc-11 g++-11 wget git gcc-mingw-w64 g++-mingw-w64 ninja-build
+apt-get -y build-dep wine-development libsdl2 libvulkan1
+apt-get -y install ccache cmake perl bison gcc-9 g++-9 wget git gcc-mingw-w64 g++-mingw-w64
 apt-get -y install libxpresent-dev libjxr-dev libusb-1.0-0-dev libgcrypt20-dev libpulse-dev libudev-dev libsane-dev libv4l-dev libkrb5-dev libgphoto2-dev liblcms2-dev libcapi20-dev
 apt-get -y install libjpeg62-dev samba-dev
 apt-get -y install libpcsclite-dev libcups2-dev
-apt-get -y install python3-pip libxcb-xkb-dev libbz2-dev texinfo curl
+apt-get -y install python3-pip libxcb-xkb-dev
 apt-get -y purge libvulkan-dev libvulkan1 libsdl2-dev libsdl2-2.0-0 libpcap0.8-dev libpcap0.8 --purge --autoremove
-apt-get -y purge *gstreamer* --purge --autoremove
 apt-get -y clean
 apt-get -y autoclean
-export PATH="/usr/local/bin:\${PATH}"
+pip3 install meson
+pip3 install ninja
+export PATH="/usr/local/bin:${PATH}"
 mkdir /opt/build_libs
 cd /opt/build_libs
 wget -O sdl.tar.gz https://www.libsdl.org/release/SDL2-${sdl2_version}.tar.gz
@@ -121,17 +118,9 @@ wget -O vulkan-headers.tar.gz https://github.com/KhronosGroup/Vulkan-Headers/arc
 wget -O spirv-headers.tar.gz https://github.com/KhronosGroup/SPIRV-Headers/archive/${spirv_headers_version}.tar.gz
 wget -O libpcap.tar.gz https://www.tcpdump.org/release/libpcap-${libpcap_version}.tar.gz
 wget -O libxkbcommon.tar.xz https://xkbcommon.org/download/libxkbcommon-${libxkbcommon_version}.tar.xz
-wget -O python3.tar.gz https://www.python.org/ftp/python/${python3_version}/Python-${python3_version}.tgz
-wget -O meson.tar.gz https://github.com/mesonbuild/meson/releases/download/${meson_version}/meson-${meson_version}.tar.gz
-wget -O cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}.tar.gz
-wget -O ccache.tar.gz https://github.com/ccache/ccache/releases/download/v${ccache_version}/ccache-${ccache_version}.tar.gz
-wget -O libglvnd.tar.gz https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v${libglvnd_version}/libglvnd-v${libglvnd_version}.tar.gz
-wget -O /usr/include/linux/ntsync.h https://raw.githubusercontent.com/zen-kernel/zen-kernel/refs/heads/6.13/main/include/uapi/linux/ntsync.h
-wget -O /usr/include/linux/userfaultfd.h https://raw.githubusercontent.com/zen-kernel/zen-kernel/refs/heads/6.13/main/include/uapi/linux/userfaultfd.h
 if [ -d /usr/lib/i386-linux-gnu ]; then wget -O wine.deb https://dl.winehq.org/wine-builds/ubuntu/dists/bionic/main/binary-i386/wine-stable_4.0.3~bionic_i386.deb; fi
 if [ -d /usr/lib/x86_64-linux-gnu ]; then wget -O wine.deb https://dl.winehq.org/wine-builds/ubuntu/dists/bionic/main/binary-amd64/wine-stable_4.0.3~bionic_amd64.deb; fi
-git clone https://gitlab.freedesktop.org/gstreamer/gstreamer.git -b 1.22
-wget https://raw.githubusercontent.com/Kron4ek/Wine-Builds/refs/heads/master/mingw-w64-build
+git clone https://gitlab.winehq.org/wine/vkd3d.git
 tar xf sdl.tar.gz
 tar xf faudio.tar.gz
 tar xf vulkan-loader.tar.gz
@@ -139,24 +128,9 @@ tar xf vulkan-headers.tar.gz
 tar xf spirv-headers.tar.gz
 tar xf libpcap.tar.gz
 tar xf libxkbcommon.tar.xz
-tar xf python3.tar.gz
-tar xf cmake.tar.gz
-tar xf ccache.tar.gz
-tar xf libglvnd.tar.gz
-tar xf meson.tar.gz -C /usr/local
-ln -s /usr/local/meson-${meson_version}/meson.py /usr/local/bin/meson
-bash mingw-w64-build x86_64
-bash mingw-w64-build i686
-export CC=gcc-11
-export CXX=g++-11
 export CFLAGS="-O2"
 export CXXFLAGS="-O2"
-cd cmake-${cmake_version}
-./bootstrap --parallel=$(nproc)
-make -j$(nproc) install
-cd ../ && mkdir build && cd build
-cmake ../ccache-${ccache_version} && make -j$(nproc) && make install
-cd ../ && rm -r build && mkdir build && cd build
+mkdir build && cd build
 cmake ../SDL2-${sdl2_version} && make -j$(nproc) && make install
 cd ../ && rm -r build && mkdir build && cd build
 cmake ../FAudio-${faudio_version} && make -j$(nproc) && make install
@@ -170,23 +144,13 @@ cd ../ && rm -r build && mkdir build && cd build
 cmake ../SPIRV-Headers-${spirv_headers_version} && make -j$(nproc) && make install
 cd ../ && dpkg -x wine.deb .
 cp opt/wine-stable/bin/widl /usr/bin
-rm -r build && mkdir build && cd build
-../libpcap-${libpcap_version}/configure && make -j$(nproc) install
+cd vkd3d && ./autogen.sh
 cd ../ && rm -r build && mkdir build && cd build
-../Python-${python3_version}/configure --enable-optimizations
-make -j$(nproc)
-make -j$(nproc) install
-pip3 install setuptools
+../vkd3d/configure && make -j$(nproc) && make install
+cd ../ && rm -r build && mkdir build && cd build
+../libpcap-${libpcap_version}/configure && make -j$(nproc) install
 cd ../libxkbcommon-${libxkbcommon_version}
 meson setup build -Denable-docs=false
-meson compile -C build
-meson install -C build
-cd ../gstreamer
-meson setup build
-ninja -C build
-ninja -C build install
-cd ../libglvnd-v${libglvnd_version}
-meson setup build
 meson compile -C build
 meson install -C build
 cd /opt && rm -r /opt/build_libs
