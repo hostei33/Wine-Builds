@@ -1,0 +1,78 @@
+name: Proton-GE WoW64 CI
+
+permissions:
+  contents: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+on:
+  schedule:
+    - cron:  '0 0 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download artifact Bootstrap
+        id: download-artifact-boot
+        uses: dawidd6/action-download-artifact@v2
+        continue-on-error: true
+        with:
+          workflow: bootstrap_wow64.yml
+          workflow_conclusion: success
+          path: /opt
+      - uses: actions/checkout@v3
+      - name: Download artifact proton
+        id: download-artifact-proton
+        uses: dawidd6/action-download-artifact@v2
+        continue-on-error: true
+        with:
+          workflow: proton-ge-init.yml
+          workflow_conclusion: success
+          path: ./
+      - name: Build Wine
+        run: |
+          sudo apt update &>/dev/null
+          sudo apt install debootstrap perl git wget xz-utils bubblewrap autoconf automake libtool &>/dev/null
+          sudo tar -C /opt -xpf "/opt/Bootstraps WoW64/bootstraps_wow64.tar.xz" &>/dev/null
+          mv "PROTON-GE SRC WoW64" wine
+          sudo chmod -R +x wine
+          cd wine
+          git init
+          git remote add origin http://github.com/gloriouseggroll/proton-ge-custom
+          git fetch origin
+          git reset --hard origin/master
+          cp ../proton-GE-drivepatch.patch ./wine-staging/patches/ntdll-ext4-case-folder/0002-ntdll-server-Mark-drive_c-as-case-insensitive-when-c.patch
+          cp ../protonprep-valve-staging.sh ./patches/protonprep-valve-staging.sh
+          mkdir ./patches/termux-patches
+          cp ../termux-wine-fix-protonge.patch patches/termux-patches
+          cp ../path-patch-universalPGE.patch patches/termux-patches
+          cp ../ndis_proton.patch patches/termux-patches
+          cp ../wine-virtual-memory-proton.patch patches/termux-patches          
+          cp ../esync-GE.patch patches/termux-patches
+          cp ../looserexceptionhandling_protonGE.patch patches/termux-patches
+          sudo chmod +x -R ./patches/termux-patches
+          sudo chmod +x ./patches/protonprep-valve-staging.sh
+          ./patches/protonprep-valve-staging.sh
+          sed -i 's/tar.gz/tar.xz/' ./Makefile.in
+          sed -i 's/tar -cvzf $(BUILD_NAME).tar.xz $(BUILD_NAME)/tar -cvzf \$\(BUILD_NAME\).tar.xz \$\(BUILD_NAME\)\/*/' ./Makefile.in
+          sed -i 's/W_TMP_EARLY=.*/\W_TMP_EARLY="\/data\/data\/com.termux\/files\/usr\/tmp\"/' protonfixes/winetricks
+          sed -i -E "$(sed -n '/mv $(REDIST_DIR) $(BUILD_NAME)/=' ./Makefile.in) i\\\tmv \$\(REDIST_DIR\)\/files \$\(REDIST_DIR\)\/wine" ./Makefile.in
+          sed -i -E "$(($(sed -n '/ -w/=' default_pfx.py) - 2)) i\    subprocess.run(runtime_args + [\"/bin/bash\", \"-c\",\n        \"mkdir -p /data/data/com.termux/files/usr/tmp/.wine && chmod 700 /data/data/com.termux/files/usr/tmp/.wine\"],\n        env=local_env, check=True)\n" ./default_pfx.py
+          mkdir build && cd build
+          ../configure.sh --build-name=wine-action-proton-GE --container-engine=podman &>/dev/null
+          cd ..
+          cp ../build_protonGE.sh .
+          chmod +x build_protonGE.sh
+          ./build_protonGE.sh
+          cd results
+          tar -czvf wine-action-proton-GE.tar.xz wine
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: Proton
+          files: |
+            ./wine/results/wine-action-proton-GE.tar.xz
