@@ -324,8 +324,8 @@ if [ ! -d "${BOOTSTRAP_X64}" ] || [ ! -d "${BOOTSTRAP_X32}" ]; then
 	exit 1
 fi
 
-chmod +x glibc-wlt-patch.sh
-./glibc-wlt-patch.sh "${BUILD_DIR}"
+chmod +x "${scriptdir}/glibc-wlt-patch.sh"
+"${scriptdir}/glibc-wlt-patch.sh" "${BUILD_DIR}"
 			
 BWRAP64="build_with_bwrap 64"
 BWRAP32="build_with_bwrap 32"
@@ -404,7 +404,7 @@ for build in ${builds_list}; do
 
 		tar -Jcf "${build}".tar.xz "${build}"
 		mv "${build}".tar.xz "${result_dir}"
-		tar -cvzf "${result_dir}"wine.tar.gz --exclude='wine/.git' --transform 's,^wine/,,' ./wine
+		tar -cvJf "${result_dir}"wine.tar.gz --exclude='wine/.git' --transform 's,^wine/,,' ./wine
 	fi
 done
 
