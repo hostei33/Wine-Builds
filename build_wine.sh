@@ -423,7 +423,7 @@ fi
 
 
 
-cd wine || exit 1
+cd "${BUILD_DIR}"/wine || exit 1
 dlls/winevulkan/make_vulkan
 tools/make_requests
 tools/make_specfiles
