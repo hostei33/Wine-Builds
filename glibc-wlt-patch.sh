@@ -1,6 +1,6 @@
 #!/bin/sh
 
-winepath="wine"
+winepath=$1
 glibcpath="/data/data/com.winlator/files/rootfs"
 
 # 定义替换函数
@@ -34,8 +34,8 @@ replace_in_file() {
 
 # 执行所有替换任务
 replace_in_file "./$winepath/dlls/crypt32/unixlib.c" \
-    '"/etc/security/cacerts",  /* Android */' \
-    '"/etc/security/cacerts",  /* Android */\n"'$glibcpath'/etc/ca-certificates/cacert.pem"'
+    '"/etc/security/cacerts"' \
+    '"/etc/security/cacerts,"\n"'$glibcpath'/etc/ca-certificates/cacert.pem"'
 
 replace_in_file "./$winepath/programs/winemenubuilder/winemenubuilder.c" \
     'dirs = xwcsdup( L"/usr/local/share/:/usr/share/" )' \
