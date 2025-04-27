@@ -6,7 +6,7 @@ index 207c2ae20d0..c92e9814207 100644
  WINE_DEFAULT_DEBUG_CHANNEL(iphlpapi);
  
  #define CHARS_IN_GUID 39
-+#define ADAPTER_INFO_PATH "/data/data/com.winlator/files/rootfs/tmp/adapterinfo"
++#define ADAPTER_INFO_PATH "/data/data/com.termux/files/usr/tmp/adapterinfo"
  
  static const WCHAR *device_tcpip = L"\\DEVICE\\TCPIP_";
  

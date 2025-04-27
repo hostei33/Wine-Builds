@@ -5,7 +5,7 @@ diff -uNr a/dlls/crypt32/unixlib.c b/dlls/crypt32/unixlib.c
   "/usr/local/share/certs/",
   "/etc/sfw/openssl/certs",
   "/etc/security/cacerts",  /* Android */
-+ "/data/data/com.winlator/files/rootfs/etc/ca-certificates/cacert.pem"
++ "/data/data/com.termux/files/usr/glibc/etc/ca-certificates/cacert.pem"
  };
  
  static void load_root_certs(void)
@@ -17,7 +17,7 @@ diff -uNr a/programs/winemenubuilder/winemenubuilder.c b/programs/winemenubuilde
          dirs = xwcsdup( _wgetenv( L"XDG_DATA_DIRS" ));
      else
 -        dirs = xwcsdup( L"/usr/local/share/:/usr/share/" );
-+        dirs = xwcsdup( L"/data/data/com.winlator/files/rootfs/local/share:/data/data/com.winlator/files/rootfs/share" );
++        dirs = xwcsdup( L"/data/data/com.termux/files/usr/glibc/local/share:/data/data/com.termux/files/usr/glibc/share" );
  
      ret = add_mimes(xdg_data_dir, mime_types);
      if (ret)
@@ -29,10 +29,10 @@ diff -uNr a/server/request.c b/server/request.c
      strcat( server_dir, "/.wineserver" );
  #else
 -    len += sizeof("/tmp/.wine-") + 12;
-+    len += sizeof("/data/data/com.winlator/files/rootfs/tmp/.wine");
++    len += sizeof("/data/data/com.termux/files/usr/tmp/.wine");
      if (!(server_dir = malloc( len ))) fatal_error( "out of memory\n" );
 -    sprintf( server_dir, "/tmp/.wine-%u", getuid() );
-+    strcpy( server_dir, "/data/data/com.winlator/files/rootfs/tmp/.wine" );
++    strcpy( server_dir, "/data/data/com.termux/files/usr/tmp/.wine" );
  #endif
      create_dir( server_dir, &st2 );
  
@@ -44,7 +44,7 @@ diff -uNr a/dlls/ntdll/unix/server.c b/dlls/ntdll/unix/server.c
      asprintf( &dir, "%s/.wineserver/server-%s", config_dir, tmp );
  #else
 -    asprintf( &dir, "/tmp/.wine-%u/server-%s", getuid(), tmp );
-+    asprintf( &dir, "/data/data/com.winlator/files/rootfs/tmp/.wine/server-%s", tmp );
++    asprintf( &dir, "/data/data/com.termux/files/usr/tmp/.wine/server-%s", tmp );
  #endif
      return dir;
  }

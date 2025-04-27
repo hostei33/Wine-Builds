@@ -89,7 +89,7 @@ index ab9d99c4f47..f40897757e3 100644
 +        set_case_insensitive( "drive_c" );
          symlink( "../drive_c", "dosdevices/c:" );
 -        symlink( "/", "dosdevices/z:" );
-+        symlink( "/data/data/com.winlator/files/rootfs", "dosdevices/z:" );
++        symlink( "/data/data/com.termux/files", "dosdevices/z:" );
      }
      else if (errno != EEXIST) fatal_perror( "cannot create %s/dosdevices", config_dir );
  

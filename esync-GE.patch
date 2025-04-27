@@ -7,7 +7,7 @@ diff -uraN wine-src/dlls/ntdll/unix/esync.c b/dlls/ntdll/unix/esync.c
  
 -static char shm_name[29];
 +static char shm_name[200];
-+static int winlator_esync;
++static int termux_esync;
  static int shm_fd;
  static void **shm_addrs;
  static int shm_addrs_size;  /* length of the allocated shm_addrs array */
@@ -19,14 +19,14 @@ diff -uraN wine-src/dlls/ntdll/unix/esync.c b/dlls/ntdll/unix/esync.c
 -    if (st.st_ino != (unsigned long)st.st_ino)
 -        sprintf( shm_name, "/wine-%lx%08lx-esync", (unsigned long)((unsigned long long)st.st_ino >> 32), (unsigned long)st.st_ino );
 +	
-+	winlator_esync = getenv("WINEESYNC_WINLATOR") && atoi(getenv("WINEESYNC_WINLATOR"));
++	termux_esync = getenv("WINEESYNC_TERMUX") && atoi(getenv("WINEESYNC_TERMUX"));
 +	
-+	if (winlator_esync)
++	if (termux_esync)
 +	{
 +    	if (st.st_ino != (unsigned long)st.st_ino)
-+        	sprintf( shm_name, "/data/data/com.winlator/files/rootfs/tmp/wine-%lx%08lx-esync", (unsigned long)((unsigned long long)st.st_ino >> 32), (unsigned long)st.st_ino );
++        	sprintf( shm_name, "/data/data/com.termux/files/usr/tmp/wine-%lx%08lx-esync", (unsigned long)((unsigned long long)st.st_ino >> 32), (unsigned long)st.st_ino );
 +    	else
-+        	sprintf( shm_name, "/data/data/com.winlator/files/rootfs/tmp/wine-%lx-esync", (unsigned long)st.st_ino );
++        	sprintf( shm_name, "/data/data/com.termux/files/usr/tmp/wine-%lx-esync", (unsigned long)st.st_ino );
 +    }
      else
 -        sprintf( shm_name, "/wine-%lx-esync", (unsigned long)st.st_ino );
@@ -38,7 +38,7 @@ diff -uraN wine-src/dlls/ntdll/unix/esync.c b/dlls/ntdll/unix/esync.c
 +    }
  
 -    if ((shm_fd = shm_open( shm_name, O_RDWR, 0644 )) == -1)
-+    if ((winlator_esync && (shm_fd = open( shm_name, O_RDWR, 0644 )) == -1) || (!winlator_esync && (shm_fd = shm_open( shm_name, O_RDWR, 0644 )) == -1))
++    if ((termux_esync && (shm_fd = open( shm_name, O_RDWR, 0644 )) == -1) || (!termux_esync && (shm_fd = shm_open( shm_name, O_RDWR, 0644 )) == -1))
      {
          /* probably the server isn't running with WINEESYNC, tell the user and bail */
          if (errno == ENOENT)
@@ -51,7 +51,7 @@ diff -uraN wine-src/programs/winebrowser/main.c b/programs/winebrowser/main.c
      static const WCHAR defaultbrowsers[] =
          L"xdg-open\0"
 -        "/usr/bin/open\0"
-+        "/data/data/com.winlator/files/rootfs/bin/open\0"
++        "/data/data/com.termux/files/usr/glibc/bin/open\0"
          "firefox\0"
          "konqueror\0"
          "mozilla\0"
@@ -60,7 +60,7 @@ diff -uraN wine-src/programs/winebrowser/main.c b/programs/winebrowser/main.c
  {
      static const WCHAR defaultmailers[] =
 -        L"/usr/bin/open\0"
-+        L"/data/data/com.winlator/files/rootfs/bin/open\0"
++        L"/data/data/com.termux/files/usr/glibc/bin/open\0"
          "xdg-email\0"
          "mozilla-thunderbird\0"
          "thunderbird\0"
@@ -78,13 +78,13 @@ diff -uraN wine-src/server/esync.c b/server/esync.c
  static void **shm_addrs;
  static int shm_addrs_size;  /* length of the allocated shm_addrs array */
  static long pagesize;
-+static int winlator_esync;
++static int termux_esync;
  
  static void shm_cleanup(void)
  {
      close( shm_fd );
 -    if (shm_unlink( shm_name ) == -1)
-+    if ((winlator_esync && unlink( shm_name ) == -1) || (!winlator_esync && shm_unlink( shm_name ) == -1))
++    if ((termux_esync && unlink( shm_name ) == -1) || (!termux_esync && shm_unlink( shm_name ) == -1))
          perror( "shm_unlink" );
  }
  
@@ -93,16 +93,16 @@ diff -uraN wine-src/server/esync.c b/server/esync.c
      if (fstat( config_dir_fd, &st ) == -1)
          fatal_error( "cannot stat config dir\n" );
 +    
-+    winlator_esync = getenv("WINEESYNC_WINLATOR") && atoi(getenv("WINEESYNC_WINLATOR"));
++    termux_esync = getenv("WINEESYNC_TERMUX") && atoi(getenv("WINEESYNC_TERMUX"));
  
 -    if (st.st_ino != (unsigned long)st.st_ino)
 -        sprintf( shm_name, "/wine-%lx%08lx-esync", (unsigned long)((unsigned long long)st.st_ino >> 32), (unsigned long)st.st_ino );
-+    if (winlator_esync)
++    if (termux_esync)
 +	{
 +    	if (st.st_ino != (unsigned long)st.st_ino)
-+        	sprintf( shm_name, "/data/data/com.winlator/files/rootfs/tmp/wine-%lx%08lx-esync", (unsigned long)((unsigned long long)st.st_ino >> 32), (unsigned long)st.st_ino );
++        	sprintf( shm_name, "/data/data/com.termux/files/usr/tmp/wine-%lx%08lx-esync", (unsigned long)((unsigned long long)st.st_ino >> 32), (unsigned long)st.st_ino );
 +    	else
-+        	sprintf( shm_name, "/data/data/com.winlator/files/rootfs/tmp/wine-%lx-esync", (unsigned long)st.st_ino );
++        	sprintf( shm_name, "/data/data/com.termux/files/usr/tmp/wine-%lx-esync", (unsigned long)st.st_ino );
 +        unlink( shm_name );
 +        shm_fd = open( shm_name, O_RDWR | O_CREAT | O_EXCL, 0644 );
 +    }
@@ -132,7 +132,7 @@ index f84520580d7..035be76394e 100644
  struct fd *load_intl_file(void)
  {
 -    static const char *nls_dirs[] = { NULL, NLSDIR, "/usr/local/share/wine/nls", "/usr/share/wine/nls" };
-+    static const char *nls_dirs[] = { NULL, NLSDIR, "/data/data/com.winlator/files/rootfs/local/share/wine/nls", "/data/data/com.winlator/files/rootfs/share/wine/nls" };
++    static const char *nls_dirs[] = { NULL, NLSDIR, "/data/data/com.termux/files/usr/glibc/local/share/wine/nls", "/data/data/com.termux/files/usr/glibc/share/wine/nls" };
      static const WCHAR nt_pathW[] = {'C',':','\\','w','i','n','d','o','w','s','\\',
          's','y','s','t','e','m','3','2','\\','l','_','i','n','t','l','.','n','l','s',0};
      static const struct unicode_str nt_name = { nt_pathW, sizeof(nt_pathW) };

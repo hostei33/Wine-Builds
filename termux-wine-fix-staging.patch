@@ -12,7 +12,7 @@ index b08a31a9..15c992cf 100644
          symlink( "../drive_c", "dosdevices/c:" );
 -        symlink( "/", "dosdevices/z:" );
 +        symlink( "/sdcard", "dosdevices/d:" );
-+        symlink( "/data/data/com.winlator/files/rootfs", "dosdevices/z:" );
++        symlink( "/data/data/com.termux/files", "dosdevices/z:" );
      }
      else if (errno != EEXIST) fatal_perror( "cannot create %s/dosdevices", config_dir );
  

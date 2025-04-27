@@ -6,7 +6,7 @@ index 72770ca..3bf1d5c 100644
   "/usr/local/share/certs/",
   "/etc/sfw/openssl/certs",
   "/etc/security/cacerts",  /* Android */
-+ "/data/data/com.winlator/files/rootfs/etc/ca-certificates/cacert.pem"
++ "/data/data/com.termux/files/usr/glibc/etc/ca-certificates/cacert.pem"
  };
  
  static void load_root_certs(void)
@@ -19,7 +19,7 @@ index 438c165..c35352b 100644
      asprintf( &dir, "%s/.wineserver/server-%llx-%llx", config_dir, (unsigned long long)dev, (unsigned long long)ino );
  #else
 -    asprintf( &dir, "/tmp/.wine-%u/server-%llx-%llx", getuid(), (unsigned long long)dev, (unsigned long long)ino );
-+    asprintf( &dir, "/data/data/com.winlator/files/rootfs/tmp/.wine-%u/server-%llx-%llx", getuid(), (unsigned long long)dev, (unsigned long long)ino );
++    asprintf( &dir, "/data/data/com.termux/files/usr/tmp/.wine-%u/server-%llx-%llx", getuid(), (unsigned long long)dev, (unsigned long long)ino );
  #endif
      return dir;
  }
@@ -32,7 +32,7 @@ index 36569fa..6a1cc6f 100644
          dirs = xwcsdup( _wgetenv( L"XDG_DATA_DIRS" ));
      else
 -        dirs = xwcsdup( L"/usr/local/share/:/usr/share/" );
-+        dirs = xwcsdup( L"/data/data/com.winlator/files/rootfs/local/share:/data/data/com.winlator/files/rootfs/share" );
++        dirs = xwcsdup( L"/data/data/com.termux/files/usr/glibc/local/share:/data/data/com.termux/files/usr/glibc/share" );
  
      ret = add_mimes(xdg_data_dir, mime_types);
      if (ret)
@@ -45,7 +45,7 @@ index 2691e0c..df1aeea 100644
          fatal_error( "out of memory\n" );
  #else
 -    if (asprintf( &base_dir, "/tmp/.wine-%u", getuid() ) == -1)
-+    if (asprintf( &base_dir, "/data/data/com.winlator/files/rootfs/tmp/.wine-%u", getuid() ) == -1)
++    if (asprintf( &base_dir, "/data/data/com.termux/files/usr/tmp/.wine-%u", getuid() ) == -1)
          fatal_error( "out of memory\n" );
  #endif
      create_dir( base_dir, &st2 );

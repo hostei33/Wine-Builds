@@ -6,7 +6,7 @@ index feb0c360d68..9323f557a05 100644
   "/usr/local/share/certs/",
   "/etc/sfw/openssl/certs",
   "/etc/security/cacerts",  /* Android */
-+ "/data/data/com.winlator/files/rootfs/etc/ca-certificates/cacert.pem",
++ "/data/data/com.termux/files/usr/glibc/etc/ca-certificates/cacert.pem",
 + NULL
  };
 + 
@@ -76,7 +76,7 @@ index f3ffd99..e6926b6 100644
      asprintf( &dir, "%s/.wineserver/server-%s", config_dir, tmp );
  #else
 -    asprintf( &dir, "/tmp/.wine-%u/server-%s", getuid(), tmp );
-+    asprintf( &dir, "/data/data/com.winlator/files/rootfs/tmp/.wine/server-%s", tmp );
++    asprintf( &dir, "/data/data/com.termux/files/usr/tmp/.wine/server-%s", tmp );
  #endif
      return dir;
  }
@@ -90,7 +90,7 @@ index 36569fa..bf2b178 100644
      else
 -        dirs = xwcsdup( L"/usr/local/share/:/usr/share/" );
 +        dirs = xwcsdup( _wgetenv(L"WINE_SHARE_DIRS") ? _wgetenv(L"WINE_SHARE_DIRS") :
-+                         L"/data/data/com.winlator/files/rootfs/local/share:/data/data/com.winlator/files/rootfs/share" );
++                         L"/data/data/com.termux/files/usr/glibc/local/share:/data/data/com.termux/files/usr/glibc/share" );
  
      ret = add_mimes(xdg_data_dir, mime_types);
      if (ret)
@@ -103,10 +103,10 @@ index 343e1a92e0e..5442ea6096f 100644
      strcat( server_dir, "/.wineserver" );
  #else
 -    len += sizeof("/tmp/.wine-") + 12;
-+    len += sizeof("/data/data/com.winlator/files/rootfs/tmp/.wine-") + 12;
++    len += sizeof("/data/data/com.termux/files/usr/tmp/.wine-") + 12;
      if (!(server_dir = malloc( len ))) fatal_error( "out of memory\n" );
 -    sprintf( server_dir, "/tmp/.wine-%u", getuid() );
-+    sprintf( server_dir, "/data/data/com.winlator/files/rootfs/tmp/.wine-%u", getuid() );
++    sprintf( server_dir, "/data/data/com.termux/files/usr/tmp/.wine-%u", getuid() );
  #endif
      create_dir( server_dir, &st2 );
  
