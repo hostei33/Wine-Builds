@@ -33,6 +33,8 @@ export WINE_VERSION="${WINE_VERSION:-latest}"
 # Available branches: vanilla, staging, proton, staging-tkg, staging-tkg-ntsync
 export WINE_BRANCH="${WINE_BRANCH:-staging}"
 
+
+export TERMUX_GLIBC="true"
 # Available proton branches: proton_3.7, proton_3.16, proton_4.2, proton_4.11
 # proton_5.0, proton_5.13, experimental_5.13, proton_6.3, experimental_6.3
 # proton_7.0, experimental_7.0, proton_8.0, experimental_8.0, experimental_9.0
@@ -298,6 +300,129 @@ if [ ! -d wine ]; then
 	exit 1
 fi
 
+
+if [ "$TERMUX_GLIBC" = "true" ]; then
+    echo "Applying additional patches for Termux Glibc..."
+
+    if [ "$WINE_BRANCH" = "staging" ]; then
+    echo "Applying esync patch"
+    patch -d wine -Np1 < "${scriptdir}"/esync.patch && \
+    echo "Applying address space patch"
+    patch -d wine -Np1 < "${scriptdir}"/termux-wine-fix-staging.patch && \
+    echo "Applying path change patch"
+    if git -C "${BUILD_DIR}/wine" log | grep -q 4e04b2d5282e4ef769176c94b4b38b5fba006a06; then
+    patch -d wine -Np1 < "${scriptdir}"/path-patch-universal.patch
+    else
+    patch -d wine -Np1 < "${scriptdir}"/pathfix.patch
+    fi || {
+        echo "Error: Failed to apply one or more patches."
+        exit 1
+    }
+    clear
+    elif [ "$WINE_BRANCH" = "vanilla" ]; then
+    echo "Applying esync patch"
+    patch -d wine -Np1 < "${scriptdir}"/esync.patch && \
+    echo "Applying address space patch"
+    patch -d wine -Np1 < "${scriptdir}"/termux-wine-fix.patch && \
+    echo "Applying path change patch"
+    if git -C "${BUILD_DIR}/wine" log | grep -q 4e04b2d5282e4ef769176c94b4b38b5fba006a06; then
+    patch -d wine -Np1 < "${scriptdir}"/path-patch-universal.patch
+    else
+    patch -d wine -Np1 < "${scriptdir}"/pathfix.patch
+    fi || {
+        echo "Error: Failed to apply one or more patches."
+        exit 1
+    }
+    clear
+    elif [ "$WINE_BRANCH" = "staging-tkg" ]; then
+    echo "Applying esync patch"
+    patch -d wine -Np1 < "${scriptdir}"/esync.patch && \
+    echo "Applying address space patch"
+    patch -d wine -Np1 < "${scriptdir}"/termux-wine-fix-staging.patch && \
+    echo "Applying path change patch"
+    ## This needs an additional check since this patch will not work on
+    ## Wine 9.4 and lower due to differences in Wine source code.
+    patch -d wine -Np1 < "${scriptdir}"/path-patch-universal.patch || {
+        echo "Error: Failed to apply one or more patches."
+        exit 1
+    }
+    clear 
+    elif [ "$WINE_BRANCH" = "proton" ]; then
+    echo "Applying esync patch"
+    patch -d wine -Np1 < "${scriptdir}"/esync.patch && \
+    echo "Applying address space patch"
+    patch -d wine -Np1 < "${scriptdir}"/termux-wine-fix.patch && \
+    echo "Applying path change patch"
+    ## Proton is based on Wine 9.0 stable release so some of the updates
+    ## for patches are not required.
+    patch -d wine -Np1 < "${scriptdir}"/pathfix.patch || {
+        echo "Error: Failed to apply one or more patches."
+        exit 1
+    }
+    clear 
+fi
+fi
+    
+# NDIS patch for fixing crappy Android's SELinux limitations.
+if [ "$WINE_BRANCH" != "proton" ]; then
+echo "Circumventing crappy SELinux's limitations... (Thanks BrunoSX)"
+patch -d wine -Np1 < "${scriptdir}"/ndis.patch || {
+        echo "Error: Failed to apply one or more patches."
+        exit 1
+    }
+    clear
+else
+echo "Circumventing crappy SELinux's limitations... (Thanks BrunoSX)"
+patch -d wine -Np1 < "${scriptdir}"/ndis_proton.patch || {
+        echo "Error: Failed to apply one or more patches."
+        exit 1
+    }
+    clear
+fi
+
+if [ ! -d wine ]; then
+	clear
+	echo "No Wine source code found!"
+	echo "Make sure that the correct Wine version is specified."
+	exit 1
+fi
+
+cd wine || exit 1
+echo "Fixing Input Bridge..."
+if [ "$WINE_BRANCH" = "vanilla" ]; then
+git revert --no-commit 2bfe81e41f93ce75139e3a6a2d0b68eb2dcb8fa6 || {
+        echo "Error: Failed to revert one or two patches. Stopping."
+        exit 1
+    }
+   clear
+elif [ "$WINE_BRANCH" = "staging" ] || [ "$WINE_BRANCH" = "staging-tkg" ]; then
+patch -p1 -R < "${scriptdir}"/inputbridgefix.patch || {
+        echo "Error: Failed to revert one or two patches. Stopping."
+        exit 1
+    }
+   clear
+fi
+
+echo "Applying CPU topology patch"
+if [ "$WINE_BRANCH" == "staging" ]; then
+patch -p1 < "${scriptdir}"/wine-cpu-topology-wine-9.22.patch || {
+        echo "Error: Failed to revert one or two patches. Stopping."
+        exit 1
+    }
+   clear
+elif [ "$WINE_BRANCH" == "staging-tkg" ]; then
+patch -p1 < "${scriptdir}"/wine-cpu-topology-tkg.patch || {
+        echo "Error: Failed to apply one or two patches. Stopping."
+        exit 1
+    }
+fi
+
+
+
+
+
+
+
 cd wine || exit 1
 dlls/winevulkan/make_vulkan
 tools/make_requests
@@ -323,9 +448,6 @@ if [ ! -d "${BOOTSTRAP_X64}" ] || [ ! -d "${BOOTSTRAP_X32}" ]; then
 	echo "Bootstraps are required for compilation!"
 	exit 1
 fi
-
-chmod +x "${scriptdir}/glibc-wlt-patch.sh"
-"${scriptdir}/glibc-wlt-patch.sh" "${BUILD_DIR}"
 			
 BWRAP64="build_with_bwrap 64"
 BWRAP32="build_with_bwrap 32"
