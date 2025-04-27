@@ -1,18 +1,9 @@
-## Introduction
-
-This is essentially a repurposed Wine build script which was made by a fellow legend Kron4ek. It was modified in such a way where it would be feasible to build Wine for Termux Glibc environment. It requires certain changes like different path locations, modified memory addresses due to how different Termux's root file system is and how it works in general. Without these changes, regular Wine builds would not be usable in any way, shape or form.
-
-It is based on Kron4ek's build script, which is used by many, and this fork is customized in a few ways:
-
-- It is possible to patch Wine for Termux glibc environment.
-- Two bootstraps for building - one's for regular builds and another for WoW64 specific builds.
-- It is possible to build for proot/chroot (essentially native Linux) as well as Termux glibc environment.
-- A few QoL improvements like adding esync to vanilla Wine, reverting certain commits which affect usability.
-- A complete rewrite is coming soon, which should allow us a more granual control over what patches are needed/required.
-
 ## Download
 
-Currently builds are only available on Github Actions page, so if you wanna grab them - go over there. Make sure that you are logged in, otherwise builda will be grayed out. 
+The builds can be downloaded either from [**the releases page**](https://github.com/Kron4ek/Wine-Builds/releases).
+
+They are also available on [the Actions page](https://github.com/Kron4ek/Wine-Builds/actions), you need to be logged into your GitHub account to be able to download from there.
+
 ---
 
 ## How to use
@@ -68,6 +59,7 @@ Configure options: `--without-ldap --without-oss --disable-winemenubuilder --dis
 ### Architectures
 
 * **amd64** - for 64-bit systems, it can run both 32-bit and 64-bit applications.
+* **amd64-wow64** - same as amd64, but does not require 32-bit libraries to run 32-bit applications, therefore it can work on systems without multilib.
 * **x86** - for 32-bit systems, it can run only 32-bit applications.
 
 ---
@@ -82,7 +74,6 @@ Configure options: `--without-ldap --without-oss --disable-winemenubuilder --dis
 
 * **Proton** is a Wine build modified by Valve and other contributors. It contains many useful patches (primarily for a better gaming experience), some of them are unique and not present in other builds. The differences from the official Steam's Proton are the lack of the Proton's python script and the lack of some builtin dlls (like DXVK and vkd3d-proton), the build environment is also different. However, you can still install DXVK and vkd3d-proton manually to your prefix, like you do with regular Wine builds.
 
-* **Wayland** is a Wine build with the patches from the [wine-wayland project](https://github.com/varmd/wine-wayland). Wine-Wayland works only on Wayland (it doesn't work on Xorg at all) and supports only Vulkan, OpenGL is not supported. Thus you can only run Vulkan games with it (by using DXVK and vkd3d as well). Before using, read all the caveats and notes on [the wine-wayland project page](https://github.com/varmd/wine-wayland).
 ---
 
 ## Compilation / Build environment
@@ -103,7 +94,3 @@ These scripts are a pretty convenient way to compile your own Wine builds if you
 * https://github.com/varmd/wine-wayland
 * https://github.com/Kron4ek/wine-wayland
 * https://gitlab.collabora.com/alf/wine/-/tree/wayland
-
-### Credits
-
-Big thanks to: Olegos, JeezDisReez, Hugo, askorbinovaya_kislota and a bunch of others who helped me figure out a way to build Wine for Termux Glibc. Thank you!
