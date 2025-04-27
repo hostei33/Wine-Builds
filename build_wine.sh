@@ -526,7 +526,7 @@ for build in ${builds_list}; do
 
 		tar -Jcf "${build}".tar.xz "${build}"
 		mv "${build}".tar.xz "${result_dir}"
-		tar -cvJf "${result_dir}"wine.tar.gz --exclude='wine/.git' --transform 's,^wine/,,' ./wine
+		tar -cvJf "${result_dir}"/wine.tar.gz --exclude='wine/.git' --transform 's,^wine/,,' ./wine
 	fi
 done
 
