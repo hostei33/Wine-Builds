@@ -247,7 +247,7 @@ else
 	
 	if [ "${WINE_VERSION}" = "get" ]; then
 	
-	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine9.22.cs.tar.gz"
+	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine9.20.cs.tar.gz"
 			# 创建目录并解压
 			cd "${BUILD_DIR}" || exit 1
 			mkdir -p wine
