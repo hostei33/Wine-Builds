@@ -232,17 +232,39 @@ elif [ "$WINE_BRANCH" = "proton" ]; then
 	else
 		BUILD_NAME=proton-"${WINE_VERSION}"
 	fi
+else
+	if [ "${WINE_VERSION}" = "git" ]; then
+		git clone https://gitlab.winehq.org/wine/wine.git wine
+		BUILD_NAME="${WINE_VERSION}-$(git -C wine rev-parse --short HEAD)"
+	else
+		BUILD_NAME="${WINE_VERSION}"
+
+		wget -q --show-progress "https://dl.winehq.org/wine/source/${WINE_URL_VERSION}/wine-${WINE_VERSION}.tar.xz"
+
+		tar xf "wine-${WINE_VERSION}.tar.xz"
+		mv "wine-${WINE_VERSION}" wine
+	fi
 	
+	if [ "${WINE_VERSION}" = "get" ]; then
+	
+	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine9.22.cs.tar.gz"
+			# 创建目录并解压
+			cd "${BUILD_DIR}" || exit 1
+			mkdir -p wine
+			chmod 771 wine
+			tar -xzf wine9.22.cs.tar.gz -C wine
+			BUILD_NAME="${WINE_VERSION}"-get
+			cd "${BUILD_DIR}" || exit 1
+	fi
 	
 
 	if [ "${WINE_BRANCH}" = "staging" ]; then
 		if [ "${WINE_VERSION}" = "git" ]; then
-			wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine9.22.cs.tar.gz"
-			# 创建目录并解压
-			mkdir -p wine
-			chmod 771 wine
-			tar -xzf wine9.22.cs.tar.gz -C wine
-			BUILD_NAME="${WINE_VERSION}-get-staging"
+			git clone https://github.com/wine-staging/wine-staging wine-staging-"${WINE_VERSION}"
+
+			upstream_commit="$(cat wine-staging-"${WINE_VERSION}"/staging/upstream-commit | head -c 7)"
+			git -C wine checkout "${upstream_commit}"
+			BUILD_NAME="${WINE_VERSION}-${upstream_commit}-staging"
 		else
 			if [ -n "${STAGING_VERSION}" ]; then
 				WINE_VERSION="${STAGING_VERSION}"
@@ -258,6 +280,25 @@ elif [ "$WINE_BRANCH" = "proton" ]; then
 			fi
 		fi
 
+		if [ -f wine-staging-"${WINE_VERSION}"/patches/patchinstall.sh ]; then
+			staging_patcher=("${BUILD_DIR}"/wine-staging-"${WINE_VERSION}"/patches/patchinstall.sh
+							DESTDIR="${BUILD_DIR}"/wine)
+		else
+			staging_patcher=("${BUILD_DIR}"/wine-staging-"${WINE_VERSION}"/staging/patchinstall.py)
+		fi
+
+		cd wine || exit 1
+		if [ -n "${STAGING_ARGS}" ]; then
+			"${staging_patcher[@]}" ${STAGING_ARGS}
+		else
+			"${staging_patcher[@]}" --all
+		fi
+
+		if [ $? -ne 0 ]; then
+			echo
+			echo "Wine-Staging patches were not applied correctly!"
+			exit 1
+		fi
 
 		cd "${BUILD_DIR}" || exit 1
 	fi
