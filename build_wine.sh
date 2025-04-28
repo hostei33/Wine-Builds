@@ -232,18 +232,6 @@ elif [ "$WINE_BRANCH" = "proton" ]; then
 	else
 		BUILD_NAME=proton-"${WINE_VERSION}"
 	fi
-else
-	if [ "${WINE_VERSION}" = "git" ]; then
-		git clone https://gitlab.winehq.org/wine/wine.git wine
-		BUILD_NAME="${WINE_VERSION}-$(git -C wine rev-parse --short HEAD)"
-	else
-		BUILD_NAME="${WINE_VERSION}"
-
-		wget -q --show-progress "https://dl.winehq.org/wine/source/${WINE_URL_VERSION}/wine-${WINE_VERSION}.tar.xz"
-
-		tar xf "wine-${WINE_VERSION}.tar.xz"
-		mv "wine-${WINE_VERSION}" wine
-	fi
 	
 	
 
