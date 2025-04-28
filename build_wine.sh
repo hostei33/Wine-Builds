@@ -248,7 +248,9 @@ else
 	if [ "${WINE_BRANCH}" = "get" ]; then
 	WINE_VERSION="999"
 	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine9.22.cs.tar.gz"
-			tar xf v"${WINE_VERSION}".tar.gz
+			mkdir -p wine  # 确保目录存在
+			tar xf "v${WINE_VERSION}.tar.gz" -C wine
+
 			BUILD_NAME="${WINE_VERSION}"-get
 	fi
 
