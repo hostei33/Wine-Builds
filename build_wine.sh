@@ -252,7 +252,7 @@ else
 			cd "${BUILD_DIR}" || exit 1
 			mkdir -p wine
 			chmod 771 wine
-			tar -xzf wine9.22.cs.tar.gz -C wine
+			tar -xzf wine9.20.cs.tar.gz -C wine
 			BUILD_NAME="${WINE_VERSION}"-get
 			cd "${BUILD_DIR}" || exit 1
 	fi
