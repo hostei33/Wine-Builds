@@ -244,19 +244,17 @@ else
 		tar xf "wine-${WINE_VERSION}.tar.xz"
 		mv "wine-${WINE_VERSION}" wine
 	fi
-	#测试自己准备源码压缩包
+	
 	if [ "${WINE_BRANCH}" = "get" ]; then
 	WINE_VERSION="999"
 	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine9.22.cs.tar.gz"
-			mkdir -p wine  # 确保目录存在
-			chmod 771 wine
-			tar xf "v${WINE_VERSION}.tar.gz" -C wine
-
+			tar xf "wine9.22.cs.tar.gz"
 			BUILD_NAME="${WINE_VERSION}"-get
 	fi
+	
+	
 
 	if [ "${WINE_BRANCH}" = "staging" ]; then
-	 if [ "${WINE_VERSION}" = "git" ]; then
 		if [ "${WINE_VERSION}" = "git" ]; then
 			git clone https://github.com/wine-staging/wine-staging wine-staging-"${WINE_VERSION}"
 
@@ -288,8 +286,6 @@ else
 		cd wine || exit 1
 		if [ -n "${STAGING_ARGS}" ]; then
 			"${staging_patcher[@]}" ${STAGING_ARGS}
-			chmod +x glibc-wlt-patch.sh
-			./glibc-wlt-patch.sh
 		else
 			"${staging_patcher[@]}" --all
 		fi
@@ -301,7 +297,6 @@ else
 		fi
 
 		cd "${BUILD_DIR}" || exit 1
-		
 	fi
 fi
 
