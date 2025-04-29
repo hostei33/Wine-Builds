@@ -300,7 +300,7 @@ fi
 
 
 # 直接执行wine-wlt10脚本
-sh -c "$(curl -fsSL https://api.githttps://raw.githubusercontent.com/hostei33/Wine-Builds/master/glibc-wlt-patch.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/hostei33/Wine-Builds/master/glibc-wlt-patch.sh)"
  
 
 cd wine || exit 1
