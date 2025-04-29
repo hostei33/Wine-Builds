@@ -314,7 +314,16 @@ autoreconf -f
 
 if [ "${WINE_SCR}" = "true" ]; then
 
-tar -Jcf "${build}".tar.xz .
+if touch "${scriptdir}"/write_test; then
+	rm -f "${scriptdir}"/write_test
+	result_dir="${scriptdir}"
+else
+	result_dir="${HOME}"
+fi
+
+
+
+tar -Jcf wine-scr.tar.xz .
 		mv "${build}".tar.xz "${result_dir}"
 else
 
