@@ -247,12 +247,12 @@ else
 	
 	if [ "${WINE_VERSION}" = "get" ]; then
 	
-	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine9.21.cs.tar.gz"
+	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine10.6-e6-wlf10.tar.gz"
 			# 创建目录并解压
 			cd "${BUILD_DIR}" || exit 1
 			mkdir -p wine
 			chmod 771 wine
-			tar -xzf wine9.21.cs.tar.gz -C wine
+			tar -xzf wine10.6-e6-wlf10.tar.gz -C wine
 			BUILD_NAME="${WINE_VERSION}"-get
 			cd "${BUILD_DIR}" || exit 1
 	fi
