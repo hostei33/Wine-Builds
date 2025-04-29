@@ -33,6 +33,8 @@ export WINE_VERSION="${WINE_VERSION:-latest}"
 # Available branches: vanilla, staging, proton, staging-tkg, staging-tkg-ntsync
 export WINE_BRANCH="${WINE_BRANCH:-staging}"
 
+
+export WINE_SCR="${WINE_SCR:-false}"
 # Available proton branches: proton_3.7, proton_3.16, proton_4.2, proton_4.11
 # proton_5.0, proton_5.13, experimental_5.13, proton_6.3, experimental_6.3
 # proton_7.0, experimental_7.0, proton_8.0, experimental_8.0, experimental_9.0
@@ -308,6 +310,15 @@ dlls/winevulkan/make_vulkan
 tools/make_requests
 tools/make_specfiles
 autoreconf -f
+
+
+if [ "${WINE_SCR}" = "true" ]; then
+
+tar -Jcf "${build}".tar.xz .
+		mv "${build}".tar.xz "${result_dir}"
+else
+
+
 cd "${BUILD_DIR}" || exit 1
 
 if [ "${DO_NOT_COMPILE}" = "true" ]; then
@@ -408,6 +419,12 @@ for build in ${builds_list}; do
 		mv "${build}".tar.xz "${result_dir}"
 	fi
 done
+
+
+
+fi
+
+
 
 rm -rf "${BUILD_DIR}"
 
