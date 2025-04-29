@@ -323,7 +323,7 @@ fi
 
 
 
-tar -Jcf wine-scr.tar.xz .
+tar -Jcf wine-scr.tar.xz --exclude='.git' .
 		mv wine-scr.tar.xz "${result_dir}"
 else
 
