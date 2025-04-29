@@ -324,7 +324,7 @@ fi
 
 
 tar -Jcf wine-scr.tar.xz .
-		mv "${build}".tar.xz "${result_dir}"
+		mv wine-scr.tar.xz "${result_dir}"
 else
 
 
