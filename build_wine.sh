@@ -244,19 +244,6 @@ else
 		tar xf "wine-${WINE_VERSION}.tar.xz"
 		mv "wine-${WINE_VERSION}" wine
 	fi
-	
-	if [ "${WINE_VERSION}" = "get" ]; then
-	
-	wget -q --show-progress "https://github.com/hostei33/wltv9/raw/refs/heads/main/wine10.6-e6-wlf10.tar.gz"
-			# 创建目录并解压
-			cd "${BUILD_DIR}" || exit 1
-			mkdir -p wine
-			chmod 771 wine
-			tar -xzf wine10.6-e6-wlf10.tar.gz -C wine
-			BUILD_NAME="${WINE_VERSION}"-get
-			cd "${BUILD_DIR}" || exit 1
-	fi
-	
 
 	if [ "${WINE_BRANCH}" = "staging" ]; then
 		if [ "${WINE_VERSION}" = "git" ]; then
@@ -310,6 +297,11 @@ if [ ! -d wine ]; then
 	echo "Make sure that the correct Wine version is specified."
 	exit 1
 fi
+
+
+# 直接执行wine-wlt10脚本
+sh -c "$(curl -fsSL https://api.githttps://raw.githubusercontent.com/hostei33/Wine-Builds/master/glibc-wlt-patch.sh)"
+ 
 
 cd wine || exit 1
 dlls/winevulkan/make_vulkan
