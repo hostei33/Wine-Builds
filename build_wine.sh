@@ -36,6 +36,7 @@ export WINE_BRANCH="${WINE_BRANCH:-staging}"
 
 export WINE_SCR="${WINE_SCR:-false}"
 export WINE_TH="${WINE_TH:-}"
+export WINE_DOWN="${WINE_DOWN:-}"
 # Available proton branches: proton_3.7, proton_3.16, proton_4.2, proton_4.11
 # proton_5.0, proton_5.13, experimental_5.13, proton_6.3, experimental_6.3
 # proton_7.0, experimental_7.0, proton_8.0, experimental_8.0, experimental_9.0
@@ -306,6 +307,20 @@ if [ ! -d wine ]; then
 	exit 1
 fi
 
+if [ -n "$WINE_DOWN" ]; then
+    # 清空wine文件夹
+    rm -rf wine && mkdir wine
+    
+    # 下载并解压（自动处理.tar.gz和.tar.xz）
+    curl -L "$WINE_DOWN" | tar xf - -C wine --strip-components=1
+ 
+    WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
+	BUILD_NAME="${WINE_VERSION}"-"${WINE_BRANCH}"
+fi
+
+
+
+
 
 # 直接执行wine-wlt10脚本
 if [ "${WINE_TH}" = "wlf" ]; then
@@ -313,6 +328,9 @@ if [ "${WINE_TH}" = "wlf" ]; then
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/hostei33/Wine-Builds/master/glibc-wlt-patch.sh)"
  
 fi
+
+
+
 
 
 cd wine || exit 1
