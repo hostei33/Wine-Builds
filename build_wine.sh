@@ -35,7 +35,7 @@ export WINE_BRANCH="${WINE_BRANCH:-staging}"
 
 
 export WINE_SCR="${WINE_SCR:-false}"
-export WINE_TH="${WINE_TH:-false}"
+export WINE_TH="${WINE_TH:-}"
 # Available proton branches: proton_3.7, proton_3.16, proton_4.2, proton_4.11
 # proton_5.0, proton_5.13, experimental_5.13, proton_6.3, experimental_6.3
 # proton_7.0, experimental_7.0, proton_8.0, experimental_8.0, experimental_9.0
@@ -81,7 +81,7 @@ export DO_NOT_COMPILE="false"
 # Make sure that ccache is installed before enabling this.
 export USE_CCACHE="false"
 
-export WINE_BUILD_OPTIONS="--without-ldap --without-oss --disable-winemenubuilder --disable-win16 --disable-tests"
+export WINE_BUILD_OPTIONS="--without-ldap --without-oss --disable-win16 --disable-tests --without-xinerama"
 
 # A temporary directory where the Wine source code will be stored.
 # Do not set this variable to an existing non-empty directory!
