@@ -196,11 +196,13 @@ echo
 if [ -n "$WINE_DOWN" ]; then
     # 清空wine文件夹
     rm -rf wine && mkdir wine
-    
+    echo 下载地址：${WINE_DOWN}
     # 下载并解压（自动处理.tar.gz和.tar.xz）
-    curl -L "$WINE_DOWN" | tar xf - -C wine --strip-components=1
+    curl -L "${WINE_DOWN}" | tar xf - -C wine
+    ls ./wine
  
     WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
+    echo WINE版本：${WINE_VERSION}
 	BUILD_NAME="${WINE_VERSION}"-"${WINE_BRANCH}"
 
 
