@@ -33,7 +33,7 @@ jobs:
           chmod +x build_wine.sh
           
           # 设置构建参数
-          export WINE_VERSION="git"
+          export WINE_VERSION="get"
           export EXPERIMENTAL_WOW64="true"
           export WINE_DOWN="${{ inputs.wine_down }}"
           

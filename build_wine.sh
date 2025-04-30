@@ -193,31 +193,20 @@ echo "Downloading the source code and patches"
 echo "Preparing Wine for compilation"
 echo
 
-if [ -n "${CUSTOM_SRC_PATH}" ]; then
-	is_url="$(echo "${CUSTOM_SRC_PATH}" | head -c 6)"
+if [ -n "$WINE_DOWN" ]; then
+    # 清空wine文件夹
+    rm -rf wine && mkdir wine
+    
+    # 下载并解压（自动处理.tar.gz和.tar.xz）
+    curl -L "$WINE_DOWN" | tar xf - -C wine --strip-components=1
+ 
+    WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
+	BUILD_NAME="${WINE_VERSION}"-"${WINE_BRANCH}"
 
-	if [ "${is_url}" = "git://" ] || [ "${is_url}" = "https:" ]; then
-		git clone "${CUSTOM_SRC_PATH}" wine -b wine-9.20
-	else
-		if [ ! -f "${CUSTOM_SRC_PATH}"/configure ]; then
-			echo "CUSTOM_SRC_PATH is set to an incorrect or non-existent directory!"
-			echo "Please make sure to use a directory with the correct Wine source code."
-			exit 1
-		fi
 
-		cp -r "${CUSTOM_SRC_PATH}" wine
-	fi
-
-	WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
-	BUILD_NAME="${WINE_VERSION}"-custom
 elif [ "$WINE_BRANCH" = "staging-tkg" ] || [ "$WINE_BRANCH" = "staging-tkg-ntsync" ]; then
 	if [ "$WINE_BRANCH" = "staging-tkg" ] && [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
-		#git clone https://github.com/Kron4ek/wine-tkg wine -b wow64
-		if [ "${WINE_TH}" = "wlf" ]; then
-		echo "测试"
-		else
-		git clone https://github.com/hostei33/wine-custom.git wine
-		fi
+		git clone https://github.com/Kron4ek/wine-tkg wine -b wow64
 	else
 		if [ "$WINE_BRANCH" = "staging-tkg" ]; then
 			git clone https://github.com/Kron4ek/wine-tkg wine
@@ -307,20 +296,6 @@ if [ ! -d wine ]; then
 	exit 1
 fi
 
-if [ -n "$WINE_DOWN" ]; then
-    # 清空wine文件夹
-    rm -rf wine && mkdir wine
-    
-    # 下载并解压（自动处理.tar.gz和.tar.xz）
-    curl -L "$WINE_DOWN" | tar xf - -C wine --strip-components=1
- 
-    WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
-	BUILD_NAME="${WINE_VERSION}"-"${WINE_BRANCH}"
-fi
-
-
-
-
 
 # 直接执行wine-wlt10脚本
 if [ "${WINE_TH}" = "wlf" ]; then
@@ -328,9 +303,6 @@ if [ "${WINE_TH}" = "wlf" ]; then
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/hostei33/Wine-Builds/master/glibc-wlt-patch.sh)"
  
 fi
-
-
-
 
 
 cd wine || exit 1
