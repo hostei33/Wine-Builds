@@ -35,6 +35,7 @@ export WINE_BRANCH="${WINE_BRANCH:-staging}"
 
 
 export WINE_SCR="${WINE_SCR:-false}"
+export WINE_TH="${WINE_TH:-false}"
 # Available proton branches: proton_3.7, proton_3.16, proton_4.2, proton_4.11
 # proton_5.0, proton_5.13, experimental_5.13, proton_6.3, experimental_6.3
 # proton_7.0, experimental_7.0, proton_8.0, experimental_8.0, experimental_9.0
@@ -195,7 +196,7 @@ if [ -n "${CUSTOM_SRC_PATH}" ]; then
 	is_url="$(echo "${CUSTOM_SRC_PATH}" | head -c 6)"
 
 	if [ "${is_url}" = "git://" ] || [ "${is_url}" = "https:" ]; then
-		git clone "${CUSTOM_SRC_PATH}" wine
+		git clone "${CUSTOM_SRC_PATH}" wine -b wine-9.20
 	else
 		if [ ! -f "${CUSTOM_SRC_PATH}"/configure ]; then
 			echo "CUSTOM_SRC_PATH is set to an incorrect or non-existent directory!"
@@ -302,8 +303,12 @@ fi
 
 
 # 直接执行wine-wlt10脚本
+if [ "${WINE_TH}" = "wlf" ]; then
+
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/hostei33/Wine-Builds/master/glibc-wlt-patch.sh)"
  
+fi
+
 
 cd wine || exit 1
 dlls/winevulkan/make_vulkan
