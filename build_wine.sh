@@ -196,9 +196,13 @@ echo
 if [ -n "$WINE_DOWN" ]; then
     # 清空wine文件夹
     rm -rf wine && mkdir wine
-    echo 下载地址：${WINE_DOWN}
-    # 下载并解压（自动处理.tar.gz和.tar.xz）
-    curl -L "${WINE_DOWN}" | tar xf - -C wine
+    # 下载到临时文件
+    wget -O wine_temp.tar.gz "${WINE_DOWN}"
+
+    # 解压到 wine 目录
+    mkdir -p wine && tar xf wine_temp.tar.gz -C wine --strip-components=1
+
+
     ls ./wine
  
     WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
