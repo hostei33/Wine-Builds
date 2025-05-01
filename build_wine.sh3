@@ -33,10 +33,6 @@ export WINE_VERSION="${WINE_VERSION:-latest}"
 # Available branches: vanilla, staging, proton, staging-tkg, staging-tkg-ntsync
 export WINE_BRANCH="${WINE_BRANCH:-staging}"
 
-export TERMUX_GLIBC="${TERMUX_GLIBC:-false}"
-export WINE_SCR="${WINE_SCR:-false}"
-export WINE_TH="${WINE_TH:-}"
-export WINE_DOWN="${WINE_DOWN:-}"
 # Available proton branches: proton_3.7, proton_3.16, proton_4.2, proton_4.11
 # proton_5.0, proton_5.13, experimental_5.13, proton_6.3, experimental_6.3
 # proton_7.0, experimental_7.0, proton_8.0, experimental_8.0, experimental_9.0
@@ -82,7 +78,7 @@ export DO_NOT_COMPILE="false"
 # Make sure that ccache is installed before enabling this.
 export USE_CCACHE="false"
 
-export WINE_BUILD_OPTIONS="--without-ldap --without-oss --disable-win16 --disable-tests --without-xinerama  --without-cups  --without-gphoto"
+export WINE_BUILD_OPTIONS="--without-ldap --without-oss --disable-winemenubuilder --disable-win16 --disable-tests"
 
 # A temporary directory where the Wine source code will be stored.
 # Do not set this variable to an existing non-empty directory!
@@ -192,21 +188,27 @@ echo
 echo "Downloading the source code and patches"
 echo "Preparing Wine for compilation"
 echo
-#下载tar.gz源码编译
-if [ -n "$WINE_DOWN" ]; then
-    rm -rf wine && mkdir wine
-    wget -O wine_temp.tar.gz "${WINE_DOWN}"
-    mkdir -p wine && tar xf wine_temp.tar.gz -C wine --strip-components=1
-    ls ./wine
- 
-    WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
-    echo WINE版本：${WINE_VERSION}
-	BUILD_NAME="${WINE_VERSION}"-"${WINE_BRANCH}"
 
+if [ -n "${CUSTOM_SRC_PATH}" ]; then
+	is_url="$(echo "${CUSTOM_SRC_PATH}" | head -c 6)"
 
+	if [ "${is_url}" = "git://" ] || [ "${is_url}" = "https:" ]; then
+		git clone "${CUSTOM_SRC_PATH}" wine
+	else
+		if [ ! -f "${CUSTOM_SRC_PATH}"/configure ]; then
+			echo "CUSTOM_SRC_PATH is set to an incorrect or non-existent directory!"
+			echo "Please make sure to use a directory with the correct Wine source code."
+			exit 1
+		fi
+
+		cp -r "${CUSTOM_SRC_PATH}" wine
+	fi
+
+	WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
+	BUILD_NAME="${WINE_VERSION}"-custom
 elif [ "$WINE_BRANCH" = "staging-tkg" ] || [ "$WINE_BRANCH" = "staging-tkg-ntsync" ]; then
 	if [ "$WINE_BRANCH" = "staging-tkg" ] && [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
-		git clone https://github.com/hostei33/wine-tkg.git wine -b wow64-10.4
+		git clone https://github.com/hostei33/wine-tkg wine
 	else
 		if [ "$WINE_BRANCH" = "staging-tkg" ]; then
 			git clone https://github.com/Kron4ek/wine-tkg wine
@@ -296,37 +298,11 @@ if [ ! -d wine ]; then
 	exit 1
 fi
 
-
-# 直接执行wine-wlt10脚本
-if [ "${WINE_TH}" = "wlf" ]; then
-
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/hostei33/Wine-Builds/master/glibc-wlt-patch.sh)"
- 
-fi
-
-
 cd wine || exit 1
 dlls/winevulkan/make_vulkan
 tools/make_requests
 tools/make_specfiles
 autoreconf -f
-
-#打包源码 "${WINE_SCR}" = "true"
-if [ "${WINE_SCR}" = "true" ]; then
-
-if touch "${scriptdir}"/write_test; then
-	rm -f "${scriptdir}"/write_test
-	result_dir="${scriptdir}"
-else
-	result_dir="${HOME}"
-fi
-
-tar -Jcf wine-scr.tar.xz --exclude='.git' .
-		mv wine-scr.tar.xz "${result_dir}"
-else
-
-
-
 cd "${BUILD_DIR}" || exit 1
 
 if [ "${DO_NOT_COMPILE}" = "true" ]; then
@@ -427,12 +403,6 @@ for build in ${builds_list}; do
 		mv "${build}".tar.xz "${result_dir}"
 	fi
 done
-
-
-
-fi
-
-
 
 rm -rf "${BUILD_DIR}"
 
