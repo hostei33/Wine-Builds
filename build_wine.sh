@@ -33,7 +33,7 @@ export WINE_VERSION="${WINE_VERSION:-latest}"
 # Available branches: vanilla, staging, proton, staging-tkg, staging-tkg-ntsync
 export WINE_BRANCH="${WINE_BRANCH:-staging}"
 
-
+export TERMUX_GLIBC="${TERMUX_GLIBC:-false}"
 export WINE_SCR="${WINE_SCR:-false}"
 export WINE_TH="${WINE_TH:-}"
 export WINE_DOWN="${WINE_DOWN:-}"
@@ -82,7 +82,7 @@ export DO_NOT_COMPILE="false"
 # Make sure that ccache is installed before enabling this.
 export USE_CCACHE="false"
 
-export WINE_BUILD_OPTIONS="--without-ldap --without-oss --disable-win16 --disable-tests --without-xinerama"
+export WINE_BUILD_OPTIONS="--without-ldap --without-oss --disable-win16 --disable-tests --without-xinerama  --without-cups  --without-gphoto"
 
 # A temporary directory where the Wine source code will be stored.
 # Do not set this variable to an existing non-empty directory!
@@ -192,17 +192,11 @@ echo
 echo "Downloading the source code and patches"
 echo "Preparing Wine for compilation"
 echo
-
+#下载tar.gz源码编译
 if [ -n "$WINE_DOWN" ]; then
-    # 清空wine文件夹
     rm -rf wine && mkdir wine
-    # 下载到临时文件
     wget -O wine_temp.tar.gz "${WINE_DOWN}"
-
-    # 解压到 wine 目录
     mkdir -p wine && tar xf wine_temp.tar.gz -C wine --strip-components=1
-
-
     ls ./wine
  
     WINE_VERSION="$(cat wine/VERSION | tail -c +14)"
@@ -317,7 +311,7 @@ tools/make_requests
 tools/make_specfiles
 autoreconf -f
 
-
+#打包源码 "${WINE_SCR}" = "true"
 if [ "${WINE_SCR}" = "true" ]; then
 
 if touch "${scriptdir}"/write_test; then
@@ -327,11 +321,10 @@ else
 	result_dir="${HOME}"
 fi
 
-
-
 tar -Jcf wine-scr.tar.xz --exclude='.git' .
 		mv wine-scr.tar.xz "${result_dir}"
 else
+
 
 
 cd "${BUILD_DIR}" || exit 1

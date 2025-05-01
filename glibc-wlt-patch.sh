@@ -67,8 +67,8 @@ replace_in_file "./$winepath/server/unicode.c" \
 
 replace_in_file "./$winepath/dlls/ntdll/unix/esync.c" \
     '/wine-' \
-    "$glibcpath/usr/wine-"
+    "$glibcpath/tmp/wine-"
 
 replace_in_file "./$winepath/server/esync.c" \
     '/wine-' \
-    "$glibcpath/usr/wine-"
+    "$glibcpath/tmp/wine-"
