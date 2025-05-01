@@ -1,8 +1,8 @@
-name: Wine-Git CI
+name: Wine Stable
 
 on:
   schedule:
-    - cron:  '0 0 */3 * *'
+    - cron:  '0 0 1 * *'
   workflow_dispatch:
 
 jobs:
@@ -24,13 +24,10 @@ jobs:
           sudo apt install debootstrap perl git wget xz-utils bubblewrap autoconf
           sudo tar -C /opt -xpf /opt/Bootstraps/bootstraps.tar.xz
           chmod +x build_wine.sh
-          export WINE_VERSION="git"
-          export EXPERIMENTAL_WOW64="true"
-          export TERMUX_GLIBC="true"
-          WINE_BRANCH=staging ./build_wine.sh
+          export WINE_VERSION="$(wget -q -O - "https://gitlab.winehq.org/wine/wine/-/raw/stable/VERSION" | tail -c +14)"
           WINE_BRANCH=vanilla ./build_wine.sh
           sha256sum *.tar.xz
       - uses: actions/upload-artifact@v4
         with:
-          name: Wine-Git
+          name: Wine Stable
           path: ./*.tar.xz

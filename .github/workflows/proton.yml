@@ -1,14 +1,9 @@
-name: Wine-GET-DOWN
+name: Proton CI
 
 on:
   schedule:
-    - cron: '0 0 */3 * *'
+    - cron:  '0 0 1 * *'
   workflow_dispatch:
-    inputs:
-      wine_down:
-        description: 'Custom Wine download URL (tar.gz/tar.xz)'
-        required: false
-        default: ''
 
 jobs:
   build:
@@ -16,7 +11,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
       - name: Download artifact
         id: download-artifact
         uses: dawidd6/action-download-artifact@v3
@@ -24,26 +18,15 @@ jobs:
           workflow: bootstraps.yml
           workflow_conclusion: success
           path: /opt
-      
-      - name: Build Wine
+      - name: Build Proton
         run: |
           sudo apt update
           sudo apt install debootstrap perl git wget xz-utils bubblewrap autoconf
           sudo tar -C /opt -xpf /opt/Bootstraps/bootstraps.tar.xz
           chmod +x build_wine.sh
-          
-          # 设置构建参数
-          export WINE_VERSION="get"
-          export EXPERIMENTAL_WOW64="true"
-          export WINE_DOWN="${{ inputs.wine_down }}"
-          
-          # 执行构建脚本
-          WINE_BRANCH=vanilla ./build_wine.sh
-          
-          # 生成校验和
+          WINE_BRANCH=proton ./build_wine.sh
           sha256sum *.tar.xz
-      
       - uses: actions/upload-artifact@v4
         with:
-          name: Wine-Git
+          name: Proton
           path: ./*.tar.xz

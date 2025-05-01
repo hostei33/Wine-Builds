@@ -6,7 +6,7 @@ They are also available on [the Actions page](https://github.com/Kron4ek/Wine-Bu
 
 ---
 
-## How to use 
+## How to use
 
 Extract to any directory and run applications using the path to the Wine binary. For example:
 

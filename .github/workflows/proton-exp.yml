@@ -1,8 +1,8 @@
-name: Wine-Git CI SCR
+name: Proton Experimental CI
 
 on:
   schedule:
-    - cron:  '0 0 */3 * *'
+    - cron:  '0 0 1,17 * *'
   workflow_dispatch:
 
 jobs:
@@ -18,19 +18,15 @@ jobs:
           workflow: bootstraps.yml
           workflow_conclusion: success
           path: /opt
-      - name: Build Wine
+      - name: Build Proton
         run: |
           sudo apt update
           sudo apt install debootstrap perl git wget xz-utils bubblewrap autoconf
           sudo tar -C /opt -xpf /opt/Bootstraps/bootstraps.tar.xz
           chmod +x build_wine.sh
-          export WINE_VERSION="git"
-          export EXPERIMENTAL_WOW64="true"
-          export WINE_SCR="true"
-          
-          WINE_BRANCH=vanilla ./build_wine.sh
+          WINE_BRANCH=proton PROTON_BRANCH=bleeding-edge ./build_wine.sh
           sha256sum *.tar.xz
       - uses: actions/upload-artifact@v4
         with:
-          name: Wine-Git
+          name: Proton Experimental
           path: ./*.tar.xz
