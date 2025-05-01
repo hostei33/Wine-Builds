@@ -212,7 +212,7 @@ if [ -n "$WINE_DOWN" ]; then
 
 elif [ "$WINE_BRANCH" = "staging-tkg" ] || [ "$WINE_BRANCH" = "staging-tkg-ntsync" ]; then
 	if [ "$WINE_BRANCH" = "staging-tkg" ] && [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
-		git clone https://github.com/hostei33/wine-tkg.git wine
+		git clone https://github.com/hostei33/wine-tkg.git wine -b wow64-10.4
 	else
 		if [ "$WINE_BRANCH" = "staging-tkg" ]; then
 			git clone https://github.com/Kron4ek/wine-tkg wine
