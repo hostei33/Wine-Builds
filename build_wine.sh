@@ -210,7 +210,7 @@ elif [ "$WINE_BRANCH" = "staging-tkg" ] || [ "$WINE_BRANCH" = "staging-tkg-ntsyn
 		git clone https://github.com/hostei33/wine-tkg wine -b "$BRANCH_NAME"
 	else
 		if [ "$WINE_BRANCH" = "staging-tkg" ]; then
-			git clone https://github.com/Kron4ek/wine-tkg wine
+			git clone https://github.com/hostei33/wine-tkg wow641016
 		else
 			git clone https://github.com/Kron4ek/wine-tkg wine -b ntsync
 		fi
