@@ -2,6 +2,12 @@ name: Wine-WoW64-NTSYNC CI
 
 on:
   workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'Git branch name to build'
+        required: true
+        default: 'master'
+        type: string
 
 jobs:
   build:
@@ -24,9 +30,9 @@ jobs:
           chmod +x build_wine.sh
           export WINE_VERSION="latest"
           export EXPERIMENTAL_WOW64="true"
-          WINE_BRANCH=staging-tkg BRANCH_NAME="这里直接写你的分支名称，就不用改两个文件了" ./build_wine.sh
+          WINE_BRANCH=staging-tkg BRANCH_NAME="${{ github.event.inputs.branch_name }}" ./build_wine.sh
           sha256sum *.tar.xz
       - uses: actions/upload-artifact@v4
         with:
-          name: Wine-WoW64-NTSYNC
+          name: Wine-WoW64-NTSYNC-${{ github.event.inputs.branch_name }}
           path: ./*.tar.xz
