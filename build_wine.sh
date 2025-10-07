@@ -298,6 +298,19 @@ if [ ! -d wine ]; then
 fi
 
 cd wine || exit 1
+if ! git ls-files --stage | tee /tmp/file_permission; then
+	echo "get file permission failed!"
+else
+	file_permission_arry=($(cat /tmp/file_permission | awk '{print $1,$4}'))
+	for ((i=0; i<${#file_permission_arry[@]}; i+=2)); do
+		file_permission_num="${file_permission_arry[i]#100}"
+		file_path="${file_permission_arry[i+1]}"
+		echo "${file_permission_arry[i]#100} ==> ${file_permission_arry[i+1]}"
+		if ! sudo chmod "${file_permission_num}" "${file_path}"; then
+			echo "Failed!"
+		fi
+	done
+fi
 dlls/winevulkan/make_vulkan
 tools/make_requests
 tools/make_specfiles
