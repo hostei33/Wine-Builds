@@ -78,7 +78,7 @@ export DO_NOT_COMPILE="false"
 # Make sure that ccache is installed before enabling this.
 export USE_CCACHE="false"
 
-export WINE_BUILD_OPTIONS="--without-ldap --without-oss --disable-win16  --without-cups --without-gphoto --without-pcsclite --without-sane  --disable-tests --without-v4l2 --without-xinerama"
+export WINE_BUILD_OPTIONS="--without-oss  --without-cups --without-gphoto --without-pcsclite --without-sane  --disable-tests --without-v4l2 --without-xinerama"
 # A temporary directory where the Wine source code will be stored.
 # Do not set this variable to an existing non-empty directory!
 # This directory is removed and recreated on each script run.
@@ -243,6 +243,8 @@ else
 		tar xf "wine-${WINE_VERSION}.tar.xz"
 		mv "wine-${WINE_VERSION}" wine
 	fi
+	
+	patch -d wine -Np1 < "${scriptdir}"/ntsync-fix-32-bit-processes.patch && echo "Applied fix for 32-bit processes for NTSYNC"
 
 	if [ "${WINE_BRANCH}" = "staging" ]; then
 		if [ "${WINE_VERSION}" = "git" ]; then
