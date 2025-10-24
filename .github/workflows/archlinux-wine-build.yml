@@ -10,7 +10,7 @@ on:
         type: string
 
 jobs:
-  archlinux:
+  ubuntu:
     runs-on: ubuntu-24.04
 
     steps:
