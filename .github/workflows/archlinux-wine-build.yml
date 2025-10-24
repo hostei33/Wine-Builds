@@ -1,0 +1,59 @@
+name: Wine-WoW64
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'Git branch name to build'
+        required: true
+        default: 'master'
+        type: string
+
+jobs:
+  archlinux:
+    runs-on: archlinux
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Depends
+        run: |
+          sudo pacman -Syu --noconfirm
+          if ! sudo pacman -y --noconfirm attr fontconfig lcms2 libxml2 libxcursor libxrandr libxdamage libxi gettext ffmpeg freetype2 glu libsm gcc-libs libpcap desktop-file-utils git autoconf ncurses bison perl fontforge flex gcc pkgconf giflib libpng gnutls wayland libxinerama libxcomposite libxmu libxxf86vm libldap mpg123 openal v4l-utils alsa-lib mesa libgl libxslt libpulse libva glib2-devel gtk3 gst-plugins-base-libs gst-plugins-good vulkan-headers vulkan-icd-loader sdl2 libcups samba opencl-headers meson ninja glslang wget ocl-icd giflib libpng alsa-plugins libjpeg-turbo cups dosbox ccache schedtool mingw-w64-gcc python-fonttools python-pefile rust gst-plugins-ugly libxpresent libgcrypt yasm jq libusb make; then
+            echo "依赖安装失败"
+            exit 1
+          fi
+      - name: git clone wine source
+        run: |
+          source env.sh
+          cd /tmp
+          if ! git clone -b ${{ github.event.inputs.branch_name }} https://github.com/hostei33/wine-tkg.git  src; then
+            echo "源码克隆失败"
+            exit 1
+          fi
+          cd /tmp/src
+          if ! ./configure ${configure_arg[@]} --prefix=/tmp/wine-build; then
+            echo "构建失败"
+            exit 1
+          fi
+          if ! make -j$(nproc); then
+            echo "编译失败"
+            exit 1
+          fi
+          make install
+      - name: package
+        run: |
+          cd /tmp
+          tar -I 'xz -T8' -cf wine-${{ github.event.inputs.branch_name }}.tar.xz wine-build
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: wine-${{ github.event.inputs.branch_name }}
+          draft: false
+          prerelease: false
+          tag_name: ${{ github.event.inputs.branch_name }}
+          body: |
+            branch: ${{ github.event.inputs.branch_name }}            
+          files: /tmp/wine-${{ github.event.inputs.branch_name }}.tar.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
