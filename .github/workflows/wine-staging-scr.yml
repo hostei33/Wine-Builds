@@ -24,8 +24,6 @@ jobs:
 
     - name: Download and prepare Wine source
       run: |
-        cat > build_wine_source.sh << 'EOF'
-        #!/usr/bin/env bash
         set -e
         
         export WINE_VERSION="10.15"
@@ -72,16 +70,16 @@ jobs:
         echo "源码包信息:"
         ls -lh "wine-staging-${WINE_VERSION}-src.tar.xz"
         echo "源码包已创建: wine-staging-${WINE_VERSION}-src.tar.xz"
-        EOF
         
-        chmod +x build_wine_source.sh
-        ./build_wine_source.sh
+        # 列出构建目录内容，用于调试
+        echo "构建目录内容:"
+        ls -la "${BUILD_DIR}"
 
     - name: Upload source artifact
       uses: actions/upload-artifact@v4
       with:
         name: wine-staging-10.15-source
-        path: $HOME/build_wine/wine-staging-*.tar.xz
+        path: $HOME/build_wine/wine-staging-10.15-src.tar.xz
         retention-days: 30
 
     - name: Show build info
