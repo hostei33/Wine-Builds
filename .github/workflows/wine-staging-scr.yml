@@ -1,17 +1,10 @@
 name: Build Wine Staging 10.15 Source
 
 on:
-  workflow_dispatch:
-    inputs:
-      skip_compilation:
-        description: '只准备源码不编译'
-        required: false
-        default: false
-        type: boolean
+  workflow_dispatch
 
 env:
   WINE_VERSION: "10.15"
-  WINE_BRANCH: "staging"
 
 jobs:
   build-wine-source:
@@ -26,29 +19,16 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           git wget autoconf xz-utils \
-          automake libtool make gcc g++ \
-          flex bison gettext libx11-dev libxext-dev \
-          libxi-dev libxrandr-dev libxcursor-dev \
-          libxxf86vm-dev libxcomposite-dev libxdamage-dev \
-          libacl1-dev libosmesa6-dev \
-          libjpeg-dev libpng-dev libgphoto2-dev \
-          liblcms2-dev libpcap-dev libudev-dev libdbus-1-dev \
-          libfontconfig1-dev libfreetype6-dev libgnutls28-dev \
-          libcups2-dev libpulse-dev libasound2-dev \
-          libssl-dev libvulkan-dev libldap2-dev libxml2-dev \
-          libxslt1-dev libavcodec-dev libavformat-dev \
-          libavutil-dev libspandsp-dev libgsm1-dev \
-          libkrb5-dev libtiff5-dev libcapi20-dev \
-          libopenal-dev gcc-multilib g++-multilib
+          automake libtool make \
+          flex bison gettext
 
-    - name: Create and run build script
+    - name: Download and prepare Wine source
       run: |
-        cat > build_wine.sh << 'EOF'
+        cat > build_wine_source.sh << 'EOF'
         #!/usr/bin/env bash
         set -e
         
         export WINE_VERSION="10.15"
-        export WINE_BRANCH="staging"
         export BUILD_DIR="$HOME/build_wine"
         
         # 清理并创建构建目录
@@ -84,60 +64,31 @@ jobs:
         
         cd "${BUILD_DIR}"
         
-        if [ "${{ inputs.skip_compilation }}" = "true" ]; then
-          echo "源码准备完成，跳过编译"
-          # 创建源码包
-          tar -Jcf "wine-staging-${WINE_VERSION}-src-prepared.tar.xz" wine
-          echo "源码包已创建: wine-staging-${WINE_VERSION}-src-prepared.tar.xz"
-          exit 0
-        fi
+        echo "源码准备完成，创建源码包..."
+        # 创建源码包
+        tar -Jcf "wine-staging-${WINE_VERSION}-src.tar.xz" wine
         
-        echo "开始编译 Wine..."
-        
-        # 创建构建目录
-        mkdir build32-tools
-        cd build32-tools
-        ../wine/configure --prefix="${BUILD_DIR}/wine-staging-${WINE_VERSION}-x86"
-        make -j$(nproc) install
-        
-        mkdir ../build64
-        cd ../build64
-        ../wine/configure --enable-win64 --prefix="${BUILD_DIR}/wine-staging-${WINE_VERSION}-amd64"
-        make -j$(nproc) install
-        
-        mkdir ../build32
-        cd ../build32
-        ../wine/configure --with-wine64="../build64" --with-wine-tools="../build32-tools" --prefix="${BUILD_DIR}/wine-staging-${WINE_VERSION}-amd64"
-        make -j$(nproc) install
-        
-        echo "编译完成!"
-        
-        # 创建二进制包
-        cd "${BUILD_DIR}"
-        tar -Jcf "wine-staging-${WINE_VERSION}-amd64.tar.xz" "wine-staging-${WINE_VERSION}-amd64"
-        tar -Jcf "wine-staging-${WINE_VERSION}-x86.tar.xz" "wine-staging-${WINE_VERSION}-x86"
-        
-        echo "构建完成!"
+        # 显示包信息
+        echo "源码包信息:"
+        ls -lh "wine-staging-${WINE_VERSION}-src.tar.xz"
+        echo "源码包已创建: wine-staging-${WINE_VERSION}-src.tar.xz"
         EOF
         
-        chmod +x build_wine.sh
-        ./build_wine.sh
+        chmod +x build_wine_source.sh
+        ./build_wine_source.sh
 
-    - name: Upload artifacts
+    - name: Upload source artifact
       uses: actions/upload-artifact@v4
       with:
-        name: wine-staging-10.15
-        path: $HOME/build_wine/*.tar.xz
+        name: wine-staging-10.15-source
+        path: $HOME/build_wine/wine-staging-*.tar.xz
         retention-days: 30
 
     - name: Show build info
       run: |
-        echo "=== 构建完成 ==="
+        echo "=== 源码打包完成 ==="
         echo "Wine 版本: 10.15 Staging"
-        if [ "${{ inputs.skip_compilation }}" = "true" ]; then
-          echo "模式: 仅准备源码"
-        else
-          echo "模式: 完整构建 (源码 + 二进制)"
-        fi
-        echo "构建产物已上传至 Artifacts"
+        echo "模式: 仅打包源码"
+        echo "构建产物: wine-staging-10.15-src.tar.xz"
+        echo "已上传至 Artifacts"
         echo "================"
