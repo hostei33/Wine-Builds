@@ -1,0 +1,87 @@
+name: Build Wine Staging 10.15 Source
+
+on:
+  workflow_dispatch
+
+jobs:
+  build-wine-source:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          wget xz-utils \
+          autoconf automake libtool make \
+          patch
+
+    - name: Download and prepare Wine source
+      run: |
+        set -e
+        
+        export WINE_VERSION="10.15"
+        export BUILD_DIR="$GITHUB_WORKSPACE/build_wine"
+        
+        # 清理并创建构建目录
+        rm -rf "${BUILD_DIR}"
+        mkdir -p "${BUILD_DIR}"
+        cd "${BUILD_DIR}"
+        
+        echo "下载 Wine Staging 10.15 源码..."
+        
+        # 下载 Wine 10.15 源码
+        wget "https://dl.winehq.org/wine/source/10.x/wine-${WINE_VERSION}.tar.xz"
+        tar xf "wine-${WINE_VERSION}.tar.xz"
+        mv "wine-${WINE_VERSION}" wine
+        
+        # 下载并应用 Staging 补丁
+        wget "https://github.com/wine-staging/wine-staging/archive/v${WINE_VERSION}.tar.gz" -O "v${WINE_VERSION}.tar.gz"
+        tar xf "v${WINE_VERSION}.tar.gz"
+        
+        cd wine
+        
+        # 应用 Staging 补丁
+        if [ -f "../wine-staging-${WINE_VERSION}/patches/patchinstall.sh" ]; then
+          "../wine-staging-${WINE_VERSION}/patches/patchinstall.sh" DESTDIR="${BUILD_DIR}/wine" --all
+        else
+          "../wine-staging-${WINE_VERSION}/staging/patchinstall.py" --all
+        fi
+        
+        # 准备构建系统
+        dlls/winevulkan/make_vulkan
+        tools/make_requests
+        tools/make_specfiles
+        autoreconf -f
+        
+        cd "${BUILD_DIR}"
+        
+        echo "源码准备完成，创建源码包..."
+        # 创建源码包
+        tar -Jcf "wine-staging-${WINE_VERSION}-src.tar.xz" wine
+        
+        # 显示构建目录内容
+        echo "构建目录内容:"
+        ls -la
+        
+        # 检查文件大小
+        echo "源码包大小:"
+        du -h "wine-staging-${WINE_VERSION}-src.tar.xz"
+
+    - name: Upload source artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: wine-staging-10.15-source
+        path: ${{ github.workspace }}/build_wine/wine-staging-10.15-src.tar.xz
+        retention-days: 30
+
+    - name: Show build info
+      run: |
+        echo "=== 源码打包完成 ==="
+        echo "Wine 版本: 10.15 Staging"
+        echo "构建产物: wine-staging-10.15-src.tar.xz"
+        echo "已上传至 Artifacts"
+        echo "================"
