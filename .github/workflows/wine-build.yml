@@ -1,0 +1,56 @@
+name: Wine-WoW64
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'Git branch name to build'
+        required: true
+        default: 'master'
+        type: string
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Depends
+        run: |
+          sudo apt update -y
+          sudo apt install -y build-essential libxkbregistry-dev libunwind-dev autoconf bison ccache debhelper desktop-file-utils docbook-to-man docbook-utils docbook-xsl flex fontforge gawk gettext libacl1-dev libasound2-dev libcapi20-dev libcups2-dev libdbus-1-dev libgif-dev libglu1-mesa-dev libgphoto2-dev libgsm1-dev libgtk-3-dev libkrb5-dev libxi-dev liblcms2-dev libldap2-dev libmpg123-dev libncurses5-dev libopenal-dev libosmesa6-dev libpcap-dev libpulse-dev libsane-dev libssl-dev libtiff5-dev libudev-dev libv4l-dev libva-dev libxslt1-dev libxt-dev ocl-icd-opencl-dev oss4-dev prelink sharutils unixodbc-dev valgrind schedtool libfreetype6-dev xserver-xorg-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gcc-multilib g++-multilib curl fonttools libsdl2-dev python3-tk libvulkan1 libc6-dev linux-libc-dev libkdb5-* libppl14 libcolord2 libvulkan-dev libgnutls28-dev libpng-dev libkadm5clnt-mit* libkadm5srv-mit* libavcodec-dev libvkd3d-dev libxinerama-dev libxcursor-dev libxrandr-dev libxcomposite-dev mingw-w64 glslang-dev glslang-tools meson wget python3-pefile rustc cargo python3-ldb samba-libs samba-dev libgcrypt20-dev libusb-1.0-0-dev yasm jq
+      - name: git clone wine source
+        run: |
+          source env.sh
+          cd /tmp
+          if ! git clone -b ${{ github.event.inputs.branch_name }} https://github.com/hostei33/wine-tkg.git  src; then
+            echo "源码克隆失败"
+            exit 1
+          fi
+          cd /tmp/src
+          if ! ./configure --enable-archs=i386,x86_64 ${configure_arg[@]} --prefix=/tmp/wine-build; then
+            echo "构建失败"
+            exit 1
+          fi
+          if ! make -j$(nproc); then
+            echo "编译失败"
+            exit 1
+          fi
+          make install
+      - name: package
+        run: |
+          cd /tmp
+          tar -I 'xz -T8' -cf wine-${{ github.event.inputs.branch_name }}.tar.xz wine-build
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: wine-${{ github.event.inputs.branch_name }}
+          draft: false
+          prerelease: false
+          tag_name: ${{ github.event.inputs.branch_name }}
+          body: |
+            branch: ${{ github.event.inputs.branch_name }}            
+          files: /tmp/wine-${{ github.event.inputs.branch_name }}.tar.xz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
