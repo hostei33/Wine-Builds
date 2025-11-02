@@ -78,7 +78,7 @@ export DO_NOT_COMPILE="false"
 # Make sure that ccache is installed before enabling this.
 export USE_CCACHE="false"
 
-export WINE_BUILD_OPTIONS="--without-ldap --without-bluez --without-udev --without-oss --without-tools --without-coreaudio --disable-win16  --without-cups --without-gphoto --without-pcsclite --without-sane  --disable-tests --without-v4l2 --without-xinerama --without-wayland --disable-debug"
+export WINE_BUILD_OPTIONS="--without-bluez --without-udev --without-oss --without-tools --without-coreaudio  --without-cups --without-gphoto --without-pcsclite --without-sane  --disable-tests --without-v4l2 --without-xinerama --without-wayland --disable-debug"
 # A temporary directory where the Wine source code will be stored.
 # Do not set this variable to an existing non-empty directory!
 # This directory is removed and recreated on each script run.
@@ -207,7 +207,7 @@ if [ -n "${CUSTOM_SRC_PATH}" ]; then
 	BUILD_NAME="${WINE_VERSION}"-custom
 elif [ "$WINE_BRANCH" = "staging-tkg" ] || [ "$WINE_BRANCH" = "staging-tkg-ntsync" ]; then
 	if [ "$WINE_BRANCH" = "staging-tkg" ] && [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
-		git clone https://github.com/hostei33/wine-tkg wine -b wow1016
+		git clone https://github.com/hostei33/wine-tkg wine -b wow10162
 	else
 		if [ "$WINE_BRANCH" = "staging-tkg" ]; then
 			git clone https://github.com/Kron4ek/wine-tkg wine
