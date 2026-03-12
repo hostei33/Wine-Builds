@@ -78,7 +78,7 @@ export DO_NOT_COMPILE="false"
 # Make sure that ccache is installed before enabling this.
 export USE_CCACHE="false"
 
-export WINE_BUILD_OPTIONS="--without-oss  --without-cups --without-gphoto --without-pcsclite --without-sane  --disable-tests --without-v4l2 --without-xinerama"
+export WINE_BUILD_OPTIONS="--without-bluez --without-udev --without-oss --without-tools --without-coreaudio  --without-cups --without-gphoto --without-pcsclite --without-sane  --disable-tests --without-v4l2 --without-xinerama --without-wayland --disable-debug"
 # A temporary directory where the Wine source code will be stored.
 # Do not set this variable to an existing non-empty directory!
 # This directory is removed and recreated on each script run.
@@ -98,9 +98,9 @@ export CROSSCXX_X32="i686-w64-mingw32-g++"
 export CROSSCC_X64="x86_64-w64-mingw32-gcc"
 export CROSSCXX_X64="x86_64-w64-mingw32-g++"
 
-export CFLAGS_X32="-march=i686 -msse2 -mfpmath=sse -O3 -ftree-vectorize"
-export CFLAGS_X64="-march=x86-64 -msse3 -mfpmath=sse -O3 -ftree-vectorize"
-export LDFLAGS="-Wl,-O3,--sort-common,--as-needed"
+export CFLAGS_X32="-march=i686 -msse2 -mfpmath=sse -O2 -ftree-vectorize"
+export CFLAGS_X64="-march=x86-64 -msse3 -mfpmath=sse -O2 -ftree-vectorize"
+export LDFLAGS="-Wl,-O1,--sort-common,--as-needed"
 
 export CROSSCFLAGS_X32="${CFLAGS_X32}"
 export CROSSCFLAGS_X64="${CFLAGS_X64}"
@@ -207,10 +207,10 @@ if [ -n "${CUSTOM_SRC_PATH}" ]; then
 	BUILD_NAME="${WINE_VERSION}"-custom
 elif [ "$WINE_BRANCH" = "staging-tkg" ] || [ "$WINE_BRANCH" = "staging-tkg-ntsync" ]; then
 	if [ "$WINE_BRANCH" = "staging-tkg" ] && [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
-		git clone https://github.com/hostei33/wine-tkg wine -b "$BRANCH_NAME"
+		git clone https://github.com/hostei33/wine-9.2-custom wine -b 240506
 	else
 		if [ "$WINE_BRANCH" = "staging-tkg" ]; then
-			git clone https://github.com/hostei33/wine-tkg wow641016
+			git clone https://github.com/Kron4ek/wine-tkg wine
 		else
 			git clone https://github.com/Kron4ek/wine-tkg wine -b ntsync
 		fi
@@ -243,8 +243,6 @@ else
 		tar xf "wine-${WINE_VERSION}.tar.xz"
 		mv "wine-${WINE_VERSION}" wine
 	fi
-	
-	patch -d wine -Np1 < "${scriptdir}"/ntsync-fix-32-bit-processes.patch && echo "Applied fix for 32-bit processes for NTSYNC"
 
 	if [ "${WINE_BRANCH}" = "staging" ]; then
 		if [ "${WINE_VERSION}" = "git" ]; then
@@ -337,33 +335,30 @@ export CROSSCXXFLAGS="${CROSSCFLAGS_X64}"
 
 mkdir "${BUILD_DIR}"/build64
 cd "${BUILD_DIR}"/build64 || exit
-${BWRAP64} "${BUILD_DIR}"/wine/configure --enable-archs=i386,x86_64 --prefix "${BUILD_DIR}"/wine-"${BUILD_NAME}"-amd64
-if ! ${BWRAP64} make -j$(nproc) install; then
-	echo "Compilation failed!"
-	exit 1
-fi
+${BWRAP64} "${BUILD_DIR}"/wine/configure --enable-win64 ${WINE_BUILD_OPTIONS} --prefix "${BUILD_DIR}"/wine-"${BUILD_NAME}"-amd64
+${BWRAP64} make -j$(nproc) install
 
-# export CROSSCC="${CROSSCC_X32}"
-# export CROSSCXX="${CROSSCXX_X32}"
-# export CFLAGS="${CFLAGS_X32}"
-# export CXXFLAGS="${CFLAGS_X32}"
-# export CROSSCFLAGS="${CROSSCFLAGS_X32}"
-# export CROSSCXXFLAGS="${CROSSCFLAGS_X32}"
+export CROSSCC="${CROSSCC_X32}"
+export CROSSCXX="${CROSSCXX_X32}"
+export CFLAGS="${CFLAGS_X32}"
+export CXXFLAGS="${CFLAGS_X32}"
+export CROSSCFLAGS="${CROSSCFLAGS_X32}"
+export CROSSCXXFLAGS="${CROSSCFLAGS_X32}"
 
-# mkdir "${BUILD_DIR}"/build32-tools
-# cd "${BUILD_DIR}"/build32-tools || exit
-# PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib/i386-linux-gnu/pkgconfig ${BWRAP32} "${BUILD_DIR}"/wine/configure ${WINE_BUILD_OPTIONS} --prefix "${BUILD_DIR}"/wine-"${BUILD_NAME}"-x86
-# ${BWRAP32} make -j$(nproc) install
+mkdir "${BUILD_DIR}"/build32-tools
+cd "${BUILD_DIR}"/build32-tools || exit
+PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib/i386-linux-gnu/pkgconfig ${BWRAP32} "${BUILD_DIR}"/wine/configure ${WINE_BUILD_OPTIONS} --prefix "${BUILD_DIR}"/wine-"${BUILD_NAME}"-x86
+${BWRAP32} make -j$(nproc) install
 
-# export CFLAGS="${CFLAGS_X64}"
-# export CXXFLAGS="${CFLAGS_X64}"
-# export CROSSCFLAGS="${CROSSCFLAGS_X64}"
-# export CROSSCXXFLAGS="${CROSSCFLAGS_X64}"
+export CFLAGS="${CFLAGS_X64}"
+export CXXFLAGS="${CFLAGS_X64}"
+export CROSSCFLAGS="${CROSSCFLAGS_X64}"
+export CROSSCXXFLAGS="${CROSSCFLAGS_X64}"
 
-# mkdir "${BUILD_DIR}"/build32
-# cd "${BUILD_DIR}"/build32 || exit
-# PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib/i386-linux-gnu/pkgconfig ${BWRAP32} "${BUILD_DIR}"/wine/configure --with-wine64="${BUILD_DIR}"/build64 --with-wine-tools="${BUILD_DIR}"/build32-tools ${WINE_BUILD_OPTIONS} --prefix "${BUILD_DIR}"/wine-${BUILD_NAME}-amd64
-# ${BWRAP32} make -j$(nproc) install
+mkdir "${BUILD_DIR}"/build32
+cd "${BUILD_DIR}"/build32 || exit
+PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib/i386-linux-gnu/pkgconfig ${BWRAP32} "${BUILD_DIR}"/wine/configure --with-wine64="${BUILD_DIR}"/build64 --with-wine-tools="${BUILD_DIR}"/build32-tools ${WINE_BUILD_OPTIONS} --prefix "${BUILD_DIR}"/wine-${BUILD_NAME}-amd64
+${BWRAP32} make -j$(nproc) install
 
 echo
 echo "Compilation complete"
@@ -394,14 +389,14 @@ for build in ${builds_list}; do
 			cp wine/wine-tkg-config.txt "${build}"
 		fi
 
-		# if [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
-  		# 	if [ -f "${build}"/bin/wine64 ]; then
-		# 		rm "${build}"/bin/wine "${build}"/bin/wine-preloader
-		# 		cp "${build}"/bin/wine64 "${build}"/bin/wine
-    	# 		else
-       	# 			rm "${build}"/lib/wine/i386-unix/wine "${build}"/lib/wine/i386-unix/wine-preloader
-	   	# 	fi
-		# fi
+		if [ "${EXPERIMENTAL_WOW64}" = "true" ]; then
+  			if [ -f "${build}"/bin/wine64 ]; then
+				rm "${build}"/bin/wine "${build}"/bin/wine-preloader
+				cp "${build}"/bin/wine64 "${build}"/bin/wine
+    			else
+       				rm "${build}"/lib/wine/i386-unix/wine "${build}"/lib/wine/i386-unix/wine-preloader
+	   		fi
+		fi
 
 		tar -Jcf "${build}".tar.xz "${build}"
 		mv "${build}".tar.xz "${result_dir}"
